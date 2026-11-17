@@ -3,7 +3,7 @@
 const $ = id => document.getElementById(id);
 const client = window.SIA_SUPABASE;
 const PENDING_KEY = "sia-space-signup-pending-email-v1";
-const AUTH_RETURN = "https://looloosia.github.io/sia-space/?auth=verified#settings";
+const AUTH_RETURN = "https://looloosia.github.io/sia-space/?auth=verified";
 const buttons = {login:$("authLoginMode"), signup:$("authSignupMode")};
 const steps = [$("authStep1"),$("authStep2"),$("authStep3")];
 let renderNumber=0;
@@ -83,6 +83,10 @@ async function renderProgress() {
       const isSame=identity?.user?.id===authUser.id;
       const isApproved=Boolean(isSame && (identity.approved || identity.admin));
       paintProgress(isApproved?"approved":"verified",authUser.email||"",isApproved,Boolean(identity?.admin&&isSame));
+      if(!isSame){
+        $("authProgressHeading").textContent="이메일 인증 완료 · 회원 권한 확인 중";
+        $("authProgressText").textContent="Supabase에서 이메일 인증을 확인했습니다. 계정의 회원 등급을 확인하고 있습니다.";
+      }
     }else{
       paintProgress("unverified",authUser.email||pending,false,false);
     }
@@ -227,4 +231,7 @@ client?.auth.onAuthStateChange((_event,_session)=>{
   setTimeout(()=>{renderProgress();},0);
 });
 renderProgress();
+if(new URLSearchParams(location.search).get("auth")==="verified"){
+  requestAnimationFrame(()=>document.getElementById("settings")?.scrollIntoView({block:"start"}));
+}
 })();
