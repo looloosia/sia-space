@@ -8,7 +8,7 @@ if(!/^https:\/\/[a-z0-9.-]+\.supabase\.co\/?$/i.test(url)||!window.supabase?.cre
 const client=window.supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 $("localNotice").textContent="서버 연결 모드입니다. 회원 등급에 따른 서버 조회는 활성화할 수 있지만, 새 기록은 관리자가 '서버에 게시'를 눌러야 다른 방문자에게 반영됩니다.";
 window.SIA_SUPABASE=client;
-let user=null,admin=false,memberLevel=1,loading=false,adminLoaded=false;
+let user=null,admin=false,approved=false,memberLevel=1,loading=false,adminLoaded=false;
 const snapshotBackupKey="sia-space-local-precloud-backup-v2";
 function applyIdentity(){
  document.documentElement.classList.toggle("sia-admin",admin);
@@ -21,18 +21,25 @@ async function query(q){const {data,error}=await q;if(error)throw error;return d
 const rows=table=>query(client.from(table).select("*").limit(5000));
 function view(){
  applyIdentity();
- $("cloudLoginForm").hidden=!!user;$("cloudLogout").hidden=!user;$("cloudAdminTools").hidden=!admin;
+ $("authModeToggle").hidden=!!user;
+ $("cloudLoginForm").hidden=!!user || window.SIA_SIGNUP_MODE===true;
+ $("cloudSignupForm").hidden=!!user || window.SIA_SIGNUP_MODE!==true;
+ $("cloudLogout").hidden=!user;$("cloudAdminTools").hidden=!admin;
  $("cloudPublish").disabled=!admin;
  $("cloudViewerRefresh").hidden=false;
- if(user)status((admin?"관리자":"회원")+" 로그인: "+user.email+" · "+memberLevel+"등급"+(admin?" · 서버 게시 가능":" · 열람 전용"));
+ if(user)status(admin?"관리자 로그인: "+user.email+" · 서버 게시 가능":approved?"회원 로그인: "+user.email+" · "+memberLevel+"등급":"회원가입 승인 대기: "+user.email+" · 현재 1등급");
  else status("서버 연결됨 · 방문자 (1등급). 관리자가 허용한 자료만 표시됩니다.");
+ window.SIA_IDENTITY={user:user?{id:user.id,email:user.email}:null,admin,approved,memberLevel};
+ document.dispatchEvent(new Event("sia:auth"));
 }
 async function who(){
  document.documentElement.classList.remove("sia-public-loaded");
  const {data,error}=await client.auth.getUser();user=error?null:data.user;
  adminLoaded=false;
- let profile=null;if(user){profile=await query(client.from("member_profiles").select("member_level,is_admin").eq("id",user.id).maybeSingle());}
- memberLevel=profile?.member_level||1;admin=Boolean(profile?.is_admin);
+ let profile=null;if(user){profile=await query(client.from("member_profiles").select("member_level,is_admin,is_approved").eq("id",user.id).maybeSingle());}
+ admin=Boolean(profile?.is_admin);
+ approved=Boolean(profile?.is_approved)||admin;
+ memberLevel=approved?(profile?.member_level||1):1;
  if(admin)document.documentElement.classList.remove("cloud-authorizing");
  view();
 }
@@ -162,7 +169,7 @@ $("cloudLogout").addEventListener("click",async()=>{
  if(!confirm("로그아웃하면 이 브라우저의 기록을 서버의 공개 자료로 바꿉니다. 저장하지 않은 로컬 기록이 있다면 먼저 백업하세요. 계속할까요?"))return;
  document.documentElement.classList.remove("sia-admin","sia-public-loaded");
  document.documentElement.classList.add("sia-visitor","cloud-authorizing");
- await client.auth.signOut();user=null;admin=false;memberLevel=1;adminLoaded=false;
+ await client.auth.signOut();user=null;admin=false;approved=false;memberLevel=1;adminLoaded=false;
  window.SIA_BRIDGE.hydrate({entries:[],watch:[],sessions:[],contact:{phone:"",email:""},currentStatus:"비공개",statusAt:null,previewLevel:1});
  document.documentElement.classList.add("cloud-authorizing");view();await loadCloud({force:true});
 });
