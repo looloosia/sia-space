@@ -180,3 +180,39 @@ html.sia-visitor:not(.sia-public-loaded) .hero .inline-status{visibility:hidden!
  #siteViewCountFooter{font-size:10px}
 }
 @media(max-width:450px){.top-actions .view-count-top{font-size:9px;padding:5px 6px}}
+
+
+/* SIA SPACE: independent menu routes and explicit access gates */
+.route-page[hidden],#accessGate[hidden],#loginGateNotice[hidden],.owner-only[hidden]{display:none!important}
+body:has(.route-page:not([hidden])) main{min-height:65vh}
+.archive-page .archive-toolbar{margin:0 0 18px;gap:12px;flex-wrap:wrap}
+.archive-page .archive-toolbar .field{min-width:min(280px,100%);flex:1;max-width:460px}
+.archive-page{min-height:50vh}
+#entryForm{margin-top:24px}
+#mainNav a.active,#archiveNav summary.active{color:#285f9f;font-weight:700}
+.archive-nav{position:relative;display:flex;align-items:center;flex:0 0 auto}
+.archive-nav summary{list-style:none;cursor:pointer;font-size:12px;font-weight:500;color:#4f5661;user-select:none;padding:8px 0}
+.archive-nav summary::-webkit-details-marker{display:none}
+.archive-nav summary::after{content:"⌄";padding-left:6px;color:#7e91a5}
+.archive-nav-menu{position:absolute;top:calc(100% + 14px);left:-18px;z-index:100;background:#fff;border:1px solid #dae2ed;box-shadow:0 12px 30px #1521371a;border-radius:9px;min-width:188px;padding:8px;display:grid;grid-template-columns:1fr 1fr;gap:2px}
+.archive-nav-menu>a{white-space:nowrap;padding:9px 8px;border-radius:4px;line-height:1.6}
+.archive-nav-menu>a:hover{background:#f0f5fa}
+.desktop-nav{gap:14px}
+.access-gate{padding-top:100px;padding-bottom:100px;min-height:56vh}
+.access-gate-content{text-align:center;border:1px solid #e0e5ed;border-radius:12px;padding:45px 22px;max-width:650px;margin:auto;background:#fff}
+.access-lock-icon{font-size:30px}
+.access-gate-content h2{font-size:23px;color:#28384e;margin:18px 0 8px}
+.access-gate-content p{font-size:14px;color:#617186;line-height:1.8;margin:0 auto 24px}
+.access-gate-content .btn{margin:4px}
+.access-login-note{border:1px solid #c9d8eb;background:#eef5fe;padding:13px 16px;border-radius:6px;margin-bottom:16px;color:#2d5b89;font-size:13px;line-height:1.7}
+#admin .section-heading{padding-bottom:16px}
+#admin .setting-grid{margin-top:18px}
+@media(max-width:760px){
+ .archive-nav{display:block;width:100%}
+ .archive-nav summary{padding:12px 18px;font-size:13px}
+ .archive-nav-menu{position:static;min-width:0;width:100%;box-shadow:none;border:0;border-radius:0;padding:2px 12px 9px;background:#f7f9fc}
+ .archive-nav-menu>a{font-size:12px!important}
+ .access-gate{padding:58px 0}
+ .access-gate-content{padding:32px 18px}
+ .archive-page .archive-toolbar .field{max-width:none}
+}
