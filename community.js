@@ -236,7 +236,10 @@ async function loadEntries(id){
   if(sequence!==requestId||id!==current)return;
   box.replaceChildren();
   if(!data?.length){
-   box.append(element("p","community-empty",id==="coffee"?"아직 확인할 신청이 없습니다.":"아직 등록된 글이 없습니다."));
+   const emptyMessage = id!=="coffee"?"아직 등록된 글이 없습니다.":person().admin
+    ?"아직 확인할 신청이 없습니다.":person().user
+    ?"아직 신청한 커피챗이 없습니다.":"로그인하면 내 커피챗 신청 내역을 확인할 수 있습니다.";
+   box.append(element("p","community-empty",emptyMessage));
   }else{
    for(const row of data)box.append(makeEntry(row,id));
   }
