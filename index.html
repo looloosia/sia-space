@@ -18,15 +18,14 @@
   <nav class="desktop-nav" aria-label="주 메뉴" id="mainNav">
     <a href="#home">홈</a>
     <a href="#now">현재 상태</a>
-    <a href="#practice">연습 기록</a>
-    <a href="#watch">영화·드라마</a>
+    <a href="#practice">시간기록</a>
     <details class="archive-nav" id="archiveNav">
       <summary>기록 메뉴</summary>
       <div class="archive-nav-menu">
-        <a href="#photos">사진</a><a href="#books">책</a>
+        <a href="#watch">영화·드라마</a><a href="#photos">사진</a><a href="#books">책</a>
         <a href="#places">장소</a><a href="#projects">프로젝트</a>
         <a href="#music">음악</a><a href="#youtube">유튜브</a>
-        <a href="#wiki">개인 위키</a><a href="#timeline">타임라인</a>
+        <a href="#wiki">개인 기록</a><a href="#timeline">타임라인</a>
       </div>
     </details>
     <a href="#community">소통</a>
@@ -71,7 +70,7 @@
   </section>
 
   <section class="section route-page" id="practice" data-section="practice">
-    <div class="section-heading"><div><div class="section-label">02 / 연습과 공부</div><h2>연습 시간</h2></div><p>피아노 연습·순공 시간을 초 단위로 표시합니다. 타이머 조작과 기록 저장은 관리자 전용입니다.</p></div>
+    <div class="section-heading"><div><div class="section-label">02 / 시간기록</div><h2>시간기록</h2></div><p>피아노 연습·순공 시간을 초 단위로 표시합니다. 타이머 조작과 기록 저장은 관리자 전용입니다.</p></div>
     <div class="dashboard-grid">
       <div class="panel timer-view owner-only">
         <div class="row" style="justify-content:center"><label class="field" style="min-width:200px;text-align:left">타이머 종류<select id="timerKind"><option value="피아노 연습">피아노 연습</option><option value="순공">순공</option></select></label></div>
@@ -165,9 +164,9 @@
   </section>
 
   <section class="section archive-page route-page" id="wiki" data-section="wiki">
-    <div class="section-heading"><div><div class="section-label">10 / 기록</div><h2>개인 위키</h2></div><p>정리해 둔 정보와 지식을 모아둡니다.</p></div>
+    <div class="section-heading"><div><div class="section-label">10 / 기록</div><h2>개인 기록</h2></div><p>정리해 둔 정보와 지식을 모아둡니다.</p></div>
     <div class="row spread archive-toolbar">
-      <label class="field">기록 검색<input id="archiveSearch-wiki" placeholder="개인 위키 제목이나 메모 검색"></label>
+      <label class="field">기록 검색<input id="archiveSearch-wiki" placeholder="개인 기록 제목이나 메모 검색"></label>
       <button type="button" class="btn primary owner-only" data-archive-add="wiki">+ 개인 위키 추가</button>
     </div>
     <div class="cards-grid" id="archiveList-wiki"></div>
