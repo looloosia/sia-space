@@ -116,6 +116,15 @@ function identityUpdated(){
 }
 $("accessLoginButton").onclick=()=>{nextAfterLogin=selectedRoute();location.hash="#settings";render();};
 $("accessBackButton").onclick=()=>{location.hash="#home";render();};
+$("adminPublishShortcut").onclick=()=>{
+ if(!identity().admin)return;
+ $("cloudPublish")?.click();
+};
+$("adminCloudLoadShortcut").onclick=()=>{
+ if(!identity().admin)return;
+ $("cloudLoad")?.click();
+};
+
 window.addEventListener("hashchange",render);
 document.addEventListener("sia:auth",identityUpdated);
 document.addEventListener("sia:menu-rules",()=>{
