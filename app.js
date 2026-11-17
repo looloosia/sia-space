@@ -90,6 +90,7 @@ $("nextMonth").onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()+
 function cards(kind){
  const watch=kind==="watch",items=watch?state.watch:state.entries,target=$(watch?"watchList":"entriesList"),search=$(watch?"watchSearch":"entrySearch").value.trim().toLowerCase();
  target.replaceChildren();
+ if(watch){const credit=document.getElementById("tmdbAttribution");if(credit)credit.hidden=!state.watch.some(x=>x.posterSource==="tmdb");}
  const matched=items.filter(x=>(watch||category==="전체"||x.kind===category)&&(String(x.title)+" "+String(x.body||"")).toLowerCase().includes(search)).sort((a,b)=>Number(b.created)-Number(a.created));
  if(!matched.length){target.append(make("p","list-empty","아직 등록된 기록이 없습니다."));return;}
  matched.forEach(x=>{
