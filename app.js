@@ -3,7 +3,7 @@
 const $=id=>document.getElementById(id),make=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=String(txt);return e;};
 const types=["사진","책","장소","프로젝트","음악","유튜브","개인 위키","타임라인"];
 const archiveMap={"사진":"photos","책":"books","장소":"places","프로젝트":"projects","음악":"music","유튜브":"youtube","개인 위키":"wiki","타임라인":"timeline"};
-const sections={home:"홈",now:"현재 상태",practice:"연습 기록",watch:"영화·드라마",photos:"사진",books:"책",places:"장소",projects:"프로젝트",music:"음악",youtube:"유튜브",wiki:"개인 위키",timeline:"타임라인",community:"소통",contact:"연락처"};
+const sections={home:"홈",now:"현재 상태",practice:"시간기록",watch:"영화·드라마",photos:"사진",books:"책",places:"장소",projects:"프로젝트",music:"음악",youtube:"유튜브",wiki:"개인 기록",timeline:"타임라인",community:"소통",contact:"연락처"};
 const defaults=()=>({version:2,levels:["일반 방문자","일반 회원","친구","특별 회원"],sectionLevels:{home:1,now:1,practice:1,watch:1,photos:1,books:1,places:1,projects:1,music:1,youtube:1,wiki:1,timeline:1,community:1,contact:2},practiceLevel:1,statusLevel:1,contactLevel:2,previewLevel:1,statuses:["쉬는 중","피아노 연습 중","공부 중","수업 중","이동 중","독서 중","외출 중","작업 중","수면 중"],currentStatus:"쉬는 중",statusAt:null,timer:{kind:"피아노 연습",active:false,startedAt:null,elapsedMs:0},sessions:[],watch:[],entries:[],social:{instagram:"",youtube:"",blog:""},contact:{phone:"",email:""}});
 let state;try{state={...defaults(),...JSON.parse(localStorage.getItem("sia-space-local-v2")||"null")};}catch{state=defaults();}
 if(!Array.isArray(state.levels)||state.levels.length<2)state=defaults();
@@ -116,7 +116,7 @@ function renderCards(target,items,watch){
   if(watch&&validUrl(x.posterUrl)){const cover=make("div","poster-cover"),img=make("img");img.src=x.posterUrl;img.alt=x.title+" 포스터";img.loading="lazy";cover.append(img);card.append(cover);}
   if(!watch&&x.kind==="유튜브"&&videoId(x.url)){const f=make("iframe");f.src="https://www.youtube-nocookie.com/embed/"+videoId(x.url);f.title=x.title;f.loading="lazy";f.allowFullscreen=true;card.append(f);}
   if(!watch&&x.kind==="사진"&&validUrl(x.url)){const box=make("div","entry-illustration"),img=make("img");img.src=x.url;img.loading="lazy";img.alt=x.title;box.append(img);card.append(box);}
-  card.append(make("span","eyebrow",x.kind),make("h3","",x.title),make("p","record-meta",(x.date||new Date(x.created).toLocaleDateString("ko-KR"))+" · "+level(x.minLevel||1)));
+  card.append(make("span","eyebrow",x.kind==="개인 위키"?"개인 기록":x.kind),make("h3","",x.title),make("p","record-meta",(x.date||new Date(x.created).toLocaleDateString("ko-KR"))+" · "+level(x.minLevel||1)));
   if(x.body)card.append(make("p","record-note",x.body));
   if(watch&&validUrl(x.posterSourceUrl)){const origin=make("a","poster-credit",x.posterSource==="tvmaze"?"TVmaze 작품 정보 ↗":x.posterSource==="itunes"?"Apple TV 작품 정보 ↗":"포스터 출처 ↗");origin.href=x.posterSourceUrl;origin.target="_blank";origin.rel="noopener noreferrer";card.append(origin);}
   if(!watch&&validUrl(x.url)){const a=make("a","link-button","링크 열기 ↗");a.href=x.url;a.target="_blank";a.rel="noopener noreferrer";card.append(a);}
@@ -161,7 +161,7 @@ function openForm(kind,x,chosenSlug){
  }
  form.scrollIntoView({behavior:"smooth",block:"center"});
 }
-types.forEach(v=>$("entryKind").append(new Option(v,v)));
+types.forEach(v=>$("entryKind").append(new Option(v==="개인 위키"?"개인 기록":v,v)));
 $("watchAddToggle").onclick=()=>openForm("watch");
 document.querySelectorAll("[data-archive-add]").forEach(button=>{
  button.onclick=()=>openForm("entries",null,button.dataset.archiveAdd);
