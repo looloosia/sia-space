@@ -1,11 +1,13 @@
 -- SIA SPACE / Supabase 초기 스키마
 -- SQL Editor에서 한 번 실행합니다. GitHub Pages 클라이언트에는 공개용 publishable key만 사용하세요.
--- 중요: 작성자 관리자 지정은 맨 아래 별도 설명대로 직접 실행해야 합니다.
+-- 중요: 신규 가입자는 승인 전 1등급만 접근할 수 있습니다. 관리자 지정은 맨 아래 참고.
+-- 이메일 인증은 Supabase Auth > Providers에서 별도로 활성화하세요.
 
 create table if not exists public.member_profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   display_name text not null default '회원',
-  member_level integer not null default 2 check (member_level between 1 and 10),
+  member_level integer not null default 1 check (member_level between 1 and 10),
+  is_approved boolean not null default false,
   is_admin boolean not null default false,
   created_at timestamptz not null default now()
 );
@@ -21,7 +23,7 @@ returns integer language sql stable security definer set search_path = ''
 as $$
   select case
     when auth.uid() is null then 1
-    else coalesce((select p.member_level from public.member_profiles p where p.id = auth.uid()), 1)
+    else coalesce((select case when p.is_approved or p.is_admin then p.member_level else 1 end from public.member_profiles p where p.id = auth.uid()), 1)
   end;
 $$;
 revoke all on function public.sia_is_admin() from public;
@@ -33,8 +35,8 @@ create or replace function public.sia_on_auth_user_created()
 returns trigger language plpgsql security definer set search_path = ''
 as $$
 begin
-  insert into public.member_profiles (id, display_name, member_level, is_admin)
-  values (new.id, coalesce(nullif(new.raw_user_meta_data ->> 'display_name',''),'회원'), 2, false)
+  insert into public.member_profiles (id, display_name, member_level, is_approved, is_admin)
+  values (new.id, left(coalesce(nullif(trim(new.raw_user_meta_data ->> 'display_name'),''),'회원'), 30), 1, false, false)
   on conflict (id) do nothing;
   return new;
 end;
@@ -164,5 +166,5 @@ create policy "admin deletes hero files" on storage.objects for delete to authen
  using (bucket_id='sia-hero' and (select public.sia_is_admin()));
 
 -- 관리자 설정(최초 1회): Supabase Auth > Users에서 본인 UUID 확인 후 아래 문장을 별도로 실행.
--- UPDATE public.member_profiles SET is_admin=true, member_level=4 WHERE id='본인-AUTH-UUID';
+-- UPDATE public.member_profiles SET is_admin=true, is_approved=true, member_level=4 WHERE id='본인-AUTH-UUID';
 -- 이 구문을 임의 사용자 UUID로 실행하면 해당 사용자에게 관리자 권한이 생기므로 주의하세요.
