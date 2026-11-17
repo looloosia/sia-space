@@ -64,12 +64,8 @@ function goLogin(required,slug) {
   :required+"등급부터 조회 가능합니다. 로그인해 주세요.";
  nextAfterLogin=slug;
  noticeLogin(required,msg);
- if(location.hash!=="#settings") {
-  location.hash="#settings";
- } else {
-  show($("settings"));
-  activate("settings");
- }
+ show($("settings"));activate("settings");
+ if(location.hash!=="#settings")location.hash="#settings";
 }
 function render(){
  const slug=selectedRoute();
@@ -94,6 +90,7 @@ function render(){
  }
  const required=requireLevel(slug);
  if(current.memberLevel>=required) {
+  nextAfterLogin=null;
   noticeLogin(0,"");show($(slug));activate(slug);return;
  }
  if(!current.user) {
@@ -125,7 +122,10 @@ $("adminCloudLoadShortcut").onclick=()=>{
  $("cloudLoad")?.click();
 };
 
-window.addEventListener("hashchange",render);
+window.addEventListener("hashchange",()=>{
+ render();
+ requestAnimationFrame(()=>{window.scrollTo({top:0,behavior:"instant"});});
+});
 document.addEventListener("sia:auth",identityUpdated);
 document.addEventListener("sia:menu-rules",()=>{
  loadError=false;
