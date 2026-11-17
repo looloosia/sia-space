@@ -2,8 +2,8 @@
 "use strict";
 const $=id=>document.getElementById(id),make=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=String(txt);return e;};
 const types=["사진","책","장소","프로젝트","음악","유튜브","개인 위키","타임라인"];
-const sections={about:"소개",now:"현재 상태",practice:"연습과 공부",watch:"영화·드라마",collections:"아카이브",location:"위치",community:"소통",contact:"연락처"};
-const defaults=()=>({version:2,levels:["일반 방문자","일반 회원","친구","특별 회원"],sectionLevels:{about:1,now:1,practice:1,watch:1,collections:1,location:4,community:1,contact:2},practiceLevel:1,statusLevel:1,locationLevel:4,contactLevel:2,previewLevel:1,statuses:["쉬는 중","피아노 연습 중","공부 중","수업 중","이동 중","독서 중","외출 중","작업 중","수면 중"],currentStatus:"쉬는 중",statusAt:null,timer:{kind:"피아노 연습",active:false,startedAt:null,elapsedMs:0},sessions:[],watch:[],entries:[],social:{instagram:"",youtube:"",blog:""},contact:{phone:"",email:""}});
+const sections={about:"소개",now:"현재 상태",practice:"연습과 공부",watch:"영화·드라마",collections:"아카이브",community:"소통",contact:"연락처"};
+const defaults=()=>({version:2,levels:["일반 방문자","일반 회원","친구","특별 회원"],sectionLevels:{about:1,now:1,practice:1,watch:1,collections:1,community:1,contact:2},practiceLevel:1,statusLevel:1,contactLevel:2,previewLevel:1,statuses:["쉬는 중","피아노 연습 중","공부 중","수업 중","이동 중","독서 중","외출 중","작업 중","수면 중"],currentStatus:"쉬는 중",statusAt:null,timer:{kind:"피아노 연습",active:false,startedAt:null,elapsedMs:0},sessions:[],watch:[],entries:[],social:{instagram:"",youtube:"",blog:""},contact:{phone:"",email:""}});
 let state;try{state={...defaults(),...JSON.parse(localStorage.getItem("sia-space-local-v2")||"null")};}catch{state=defaults();}
 if(!Array.isArray(state.levels)||state.levels.length<2)state=defaults();
 state.levels=state.levels.slice(0,10);state.sessions=Array.isArray(state.sessions)?state.sessions:[];state.watch=Array.isArray(state.watch)?state.watch:[];state.entries=Array.isArray(state.entries)?state.entries:[];state.statuses=Array.isArray(state.statuses)&&state.statuses.length?state.statuses:defaults().statuses;
@@ -18,14 +18,14 @@ const id=()=>Math.random().toString(36).slice(2)+Date.now(),level=n=>n+"등급 �
 let month=new Date();month.setDate(1);let selected=today(),category="전체",editingWatch=null,editingEntry=null;
 function toast(s){const el=$("toast");el.textContent=s;el.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.hidden=true,3500);}
 function options(el,values,current){el.replaceChildren(...values.map(v=>new Option(v[0],String(v[1]))));if(current!==undefined)el.value=String(current);}
-function levelOptions(){document.querySelectorAll(".level-options").forEach(el=>{let v=el.value;options(el,state.levels.map((name,i)=>[(i+1)+"등급 · "+name,i+1]),v||1);if(el.id==="locationLevel"){[...el.options].forEach(o=>{if(Number(o.value)<2)o.disabled=true;});}});}
+function levelOptions(){document.querySelectorAll(".level-options").forEach(el=>{let v=el.value;options(el,state.levels.map((name,i)=>[(i+1)+"등급 · "+name,i+1]),v||1);});}
 function settings(){
  levelOptions();
  options($("statusSelect"),state.statuses.map(v=>[v,v]),state.currentStatus);
  $("currentStatus").textContent=$("heroStatus").textContent=state.currentStatus;
  $("statusUpdated").textContent=state.statusAt?"마지막 변경: "+new Date(state.statusAt).toLocaleString("ko-KR"):"아직 변경한 적 없음";
- $("statusAudience").textContent=level(state.statusLevel);$("practiceAudience").textContent=level(state.practiceLevel);$("locationAudience").textContent=level(state.locationLevel);
- ["statusLevel","practiceLevel","locationLevel","contactLevel","previewLevel"].forEach(key=>$(key).value=state[key]);
+ $("statusAudience").textContent=level(state.statusLevel);$("practiceAudience").textContent=level(state.practiceLevel);
+ ["statusLevel","practiceLevel","contactLevel","previewLevel"].forEach(key=>$(key).value=state[key]);
  $("headerLevel").textContent=state.previewLevel+"등급";
  $("statusOptionsEditor").replaceChildren();
  state.statuses.forEach(status=>{const row=make("div","setting-row");row.append(make("span","",status));const b=make("button","btn small","삭제");b.disabled=state.statuses.length===1;b.onclick=()=>{state.statuses=state.statuses.filter(v=>v!==status);if(state.currentStatus===status)state.currentStatus=state.statuses[0];save();settings();};row.append(b);$("statusOptionsEditor").append(row);});
@@ -37,7 +37,7 @@ function settings(){
  $("addLevel").disabled=state.levels.length>=10;
  $("sectionEditor").replaceChildren();
  Object.entries(sections).forEach(([key,label])=>{const row=make("div","setting-row"),sel=make("select","select");
-  options(sel,state.levels.map((n,i)=>[(i+1)+"등급 이상",i+1]).filter(x=>key!=="location"||x[1]>=2),state.sectionLevels[key]||1);
+  options(sel,state.levels.map((n,i)=>[(i+1)+"등급 이상",i+1]),state.sectionLevels[key]||1);
   sel.onchange=()=>{state.sectionLevels[key]=Number(sel.value);save();toast("공개 범위 미리보기를 저장했습니다.");};row.append(make("label","",label),sel);$("sectionEditor").append(row);
  });
  $("socialInstagram").value=state.social.instagram||"";$("socialYoutube").value=state.social.youtube||"";$("socialBlog").value=state.social.blog||"";
@@ -45,7 +45,7 @@ function settings(){
  renderSocial();renderContact();renderSummary();
 }
 $("addLevel").onclick=()=>{if(state.levels.length>=10)return;state.levels.push("새 등급 "+(state.levels.length+1));save();settings();};
-["statusLevel","practiceLevel","locationLevel","contactLevel","previewLevel"].forEach(key=>$(key).onchange=()=>{state[key]=Number($(key).value);save();settings();});
+["statusLevel","practiceLevel","contactLevel","previewLevel"].forEach(key=>$(key).onchange=()=>{state[key]=Number($(key).value);save();settings();});
 $("saveStatus").onclick=()=>{state.currentStatus=$("statusSelect").value;state.statusAt=Date.now();save();settings();toast("이 브라우저의 상태를 저장했습니다.");};
 $("newStatusForm").onsubmit=e=>{e.preventDefault();const v=$("newStatusInput").value.trim();if(!v||state.statuses.includes(v)||state.statuses.length>=30)return;state.statuses.push(v);$("newStatusInput").value="";save();settings();};
 const elapsed=()=>Math.max(0,(Number(state.timer.elapsedMs)||0)+(state.timer.active?Math.max(0,Date.now()-state.timer.startedAt):0));
@@ -83,7 +83,7 @@ function calendar(){
  const found=state.sessions.filter(s=>s.date===selected);
  if(!found.length)list.append(make("li","muted","기록이 없습니다."));
  found.forEach(x=>{const li=make("li");li.append(make("div","record-title",x.kind+" · "+duration(x.elapsedMs)));
- const b=make("button","link-button","삭제");b.onclick=()=>{if(!confirm("이 기록을 삭제할까요?"))return;state.sessions=state.sessions.filter(v=>v.id!==x.id);save();calendar();renderSummary();};li.append(b);list.append(li);});
+ const b=make("button","link-button owner-only","삭제");b.onclick=()=>{if(!confirm("이 기록을 삭제할까요?"))return;state.sessions=state.sessions.filter(v=>v.id!==x.id);save();calendar();renderSummary();};li.append(b);list.append(li);});
 }
 $("prevMonth").onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()-1,1);calendar();};
 $("nextMonth").onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()+1,1);calendar();};
@@ -102,7 +102,7 @@ function cards(kind){
   if(x.body)card.append(make("p","record-note",x.body));
   if(watch&&validUrl(x.posterSourceUrl)){const origin=make("a","poster-credit",x.posterSource==="tvmaze"?"TVmaze 작품 정보 ↗":x.posterSource==="itunes"?"Apple TV 작품 정보 ↗":"포스터 출처 ↗");origin.href=x.posterSourceUrl;origin.target="_blank";origin.rel="noopener noreferrer";card.append(origin);}
   if(!watch&&validUrl(x.url)){const a=make("a","link-button","링크 열기 ↗");a.href=x.url;a.target="_blank";a.rel="noopener noreferrer";card.append(a);}
-  const foot=make("footer"),edit=make("button","link-button","수정"),del=make("button","link-button","삭제");
+  const foot=make("footer"),edit=make("button","link-button owner-only","수정"),del=make("button","link-button owner-only","삭제");
   edit.onclick=()=>openForm(kind,x);del.onclick=()=>{if(!confirm("이 기록을 삭제할까요?"))return;state[watch?"watch":"entries"]=items.filter(v=>v.id!==x.id);save();cards(kind);};
   foot.append(edit,del);card.append(foot);target.append(card);
  });
