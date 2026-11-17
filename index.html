@@ -136,6 +136,21 @@
   <section class="section" id="settings">
     <div class="section-heading"><div><div class="section-label">09 / 사이트 설정 — 로컬 체험</div><h2>사이트 설정</h2></div><p>여기서 바꾼 설정은 현재 브라우저에만 적용됩니다. 등급 제한을 실제로 보호하려면 회원 인증과 서버 권한 검사가 필요해요.</p></div>
     <div class="setting-grid">
+      <div class="setting-block" id="cloudAccountPanel"><h3>회원 로그인 · 서버 연결</h3>
+        <p class="muted" id="cloudStatus">서버 연결 정보를 확인하고 있습니다.</p>
+        <form class="stack" id="cloudLoginForm" hidden>
+          <label class="field">이메일<input id="cloudEmail" type="email" autocomplete="username" required></label>
+          <label class="field">비밀번호<input id="cloudPassword" type="password" autocomplete="current-password" required></label>
+          <button type="submit" class="btn primary">로그인</button>
+        </form>
+        <div id="cloudAdminTools" hidden class="stack">
+          <p class="muted">관리자 전용: 아래 버튼으로 서버 자료를 확인하거나 현재 브라우저의 기록을 게시할 수 있습니다.</p>
+          <button id="cloudLoad" type="button" class="btn">서버 기록 불러오기</button>
+          <button id="cloudPublish" type="button" class="btn primary">현재 기록 서버에 게시</button>
+        </div>
+        <button id="cloudLogout" type="button" class="btn" hidden>로그아웃</button>
+        <p class="section-note">서버 연결 전에는 로컬 체험판입니다. 로그인 계정은 Supabase에서 별도 생성해야 합니다.</p>
+      </div>
       <div class="setting-block"><h3>첫 화면 대표 사진</h3><p class="muted">사진을 올리거나 이미지 URL을 입력할 수 있습니다. 아직은 이 브라우저에만 저장됩니다.</p>
         <label class="field">컴퓨터·휴대폰에서 사진 선택<input type="file" id="heroImageFile" accept="image/jpeg,image/png,image/webp,image/avif"></label>
         <label class="field" style="margin-top:12px">이미지 주소로 설정<input type="url" id="heroImageUrl" placeholder="https://..."></label>
@@ -157,7 +172,10 @@
 <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
 <script src="script.js" defer></script>
 <link rel="stylesheet" href="enhancements.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+<script src="site-config.js" defer></script>
 <script src="app.js" defer></script>
 <script src="enhancements.js" defer></script>
+<script src="backend.js" defer></script>
 </body>
 </html>
