@@ -1,6 +1,6 @@
 (()=>{
 "use strict";
-const $=id=>document.getElementById(id),status=s=>{$("cloudStatus").textContent=s;};
+const $=id=>document.getElementById(id),status=s=>{$("cloudStatus").textContent=s;const adminStatus=$("adminPublishStatus");if(adminStatus)adminStatus.textContent=s;};
 const config=window.SIA_CONFIG||{},url=config.supabaseUrl||"",key=config.supabasePublishableKey||"";
 const ready=Boolean(url&&key);
 if(!ready){status("아직 서버가 연결되지 않았습니다. Supabase 연결 정보를 입력하면 로그인·게시 기능이 활성화됩니다.");return;}
