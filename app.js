@@ -217,10 +217,7 @@ $("importData").onchange=async e=>{
   state={...defaults(),...imported};state.levels=state.levels.slice(0,10);state.timer={...defaults().timer};save();settings();calendar();cards("watch");cards("entries");timerRender();toast("백업을 불러왔습니다.");
  }catch(err){toast(err.message||"백업을 읽을 수 없습니다.");}finally{e.target.value="";}
 };
-const menu=$("menuButton"),nav=$("mainNav");menu.onclick=()=>{const opened=nav.classList.toggle("open");menu.setAttribute("aria-expanded",String(opened));};nav.querySelectorAll("a").forEach(a=>a.onclick=()=>{
- nav.classList.remove("open");menu.setAttribute("aria-expanded","false");
- const details=$("archiveNav");if(details)details.open=false;
-});
+// Mobile/tablet navigation is handled only in script.js to avoid double toggling.
 window.SIA_BRIDGE={
  snapshot:()=>JSON.parse(JSON.stringify(state)),
  hydrate:(patch)=>{
