@@ -12,6 +12,7 @@ function setPhoto(source){
  image.src=source;
 }
 try{setPhoto(localStorage.getItem(photoKey)||"");}catch{setPhoto("");}
+document.addEventListener("sia:photo-sync",e=>setPhoto(e.detail?.url||""));
 $("heroUrlSave").addEventListener("click",()=>{
  const value=$("heroImageUrl").value.trim(),url=validHttps(value);
  if(!url){say("https:// 로 시작하는 이미지 주소를 입력하세요.");return;}
@@ -78,10 +79,15 @@ $("posterSearch").addEventListener("click",async()=>{
  const button=$("posterSearch"),results=$("posterResults"),status=$("posterSearchStatus");
  button.disabled=true;status.textContent="포스터 검색 중…";results.replaceChildren();
  try{
-  const list=kind==="드라마"?await searchTVMaze(title):await searchApple(title);
+  let list=null,source="";
+  if(typeof window.SIA_TMDB_SEARCH==="function"){
+   try{list=await window.SIA_TMDB_SEARCH(title,kind);if(list.length)source="TMDB";}
+   catch{list=null;}
+  }
+  if(!list?.length){list=kind==="드라마"?await searchTVMaze(title):await searchApple(title);source=kind==="드라마"?"TVmaze":"Apple iTunes";}
   const rendered=list.map(resultItem).filter(Boolean);
   if(!rendered.length)status.textContent="검색 결과가 없습니다. 포스터 주소를 직접 입력할 수 있습니다.";
-  else{results.append(...rendered);status.textContent=rendered.length+"개 후보 · 정확한 작품을 선택하세요. 출처: "+(kind==="드라마"?"TVmaze":"Apple iTunes");}
+  else{results.append(...rendered);status.textContent=rendered.length+"개 후보 · 정확한 작품을 선택하세요. 출처: "+source;}
  }catch(e){status.textContent="검색 API가 응답하지 않습니다. 잠시 후 다시 시도하거나 포스터 주소를 직접 입력하세요.";}
  finally{button.disabled=false;}
 });
