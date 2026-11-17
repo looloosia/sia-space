@@ -80,6 +80,7 @@
     <div class="section-heading"><div><div class="section-label">04 / 감상 기록</div><h2>영화·드라마 감상 기록</h2></div><p>날짜와 감상을 기록하고 항목마다 원하는 공개 등급을 지정할 수 있습니다.</p></div>
     <div class="row spread" style="margin-bottom:15px"><label class="field" style="min-width:200px">제목 검색<input id="watchSearch" placeholder="작품 제목 검색"></label><button class="btn primary" id="watchAddToggle">+ 감상 기록 추가</button></div>
     <div id="watchList" class="cards-grid"></div>
+    <p class="section-note" id="tmdbAttribution" hidden>이 사이트는 TMDB API를 사용하지만 TMDB의 보증이나 인증을 받지 않았습니다. <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">TMDB 정보 ↗</a></p>
     <form id="watchForm" class="form-box" hidden>
       <h3 id="watchFormTitle">감상 기록 추가</h3><div class="fields">
         <label class="field">작품 제목<input id="watchTitle" required maxlength="120" placeholder="영화 또는 드라마 제목"></label>
@@ -148,6 +149,7 @@
           <button id="cloudLoad" type="button" class="btn">서버 기록 불러오기</button>
           <button id="cloudPublish" type="button" class="btn primary">현재 기록 서버에 게시</button>
         </div>
+        <button id="cloudViewerRefresh" type="button" class="btn" hidden>서버 내용 새로고침</button>
         <button id="cloudLogout" type="button" class="btn" hidden>로그아웃</button>
         <p class="section-note">서버 연결 전에는 로컬 체험판입니다. 로그인 계정은 Supabase에서 별도 생성해야 합니다.</p>
       </div>
