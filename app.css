@@ -98,12 +98,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .contact-pane{display:flex;justify-content:space-between;flex-wrap:wrap;gap:20px;align-items:center}
 .community-feed{display:grid;gap:10px}
 .community-item{border:1px solid var(--line);background:#fff;padding:18px}
-.location-panel{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center}
-.map-blank{min-height:220px;background:repeating-linear-gradient(35deg,#ede9e0,#ede9e0 28px,#e6e1d8 29px,#e6e1d8 30px);display:grid;place-items:center;color:#7f776c;font-size:13px;border:1px solid #e0dbd2}
-.location-badge{background:#fff;box-shadow:0 3px 12px #00000010;padding:13px 18px;border-radius:30px}
 .backup-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
 .toast{position:fixed;bottom:24px;right:24px;max-width:360px;background:#393630;color:#fff;padding:14px 20px;border-radius:5px;font-size:12px;z-index:60;box-shadow:0 8px 22px #0002}
 footer{min-height:85px}
-@media(max-width:1000px){.dashboard-grid,.calendar-layout,.setting-grid{grid-template-columns:1fr}.cards-grid{grid-template-columns:repeat(2,1fr)}.location-panel{grid-template-columns:1fr}.desktop-nav{gap:11px}}
+@media(max-width:1000px){.dashboard-grid,.calendar-layout,.setting-grid{grid-template-columns:1fr}.cards-grid{grid-template-columns:repeat(2,1fr)}.desktop-nav{gap:11px}}
 @media(max-width:760px){.topbar{height:64px}.desktop-nav{top:64px}.hero{min-height:auto}.hero h1{font-size:44px}.hero-art{height:300px}.section{padding-top:62px;padding-bottom:62px}.notice{margin:0 6% 16px}.cards-grid{grid-template-columns:1fr}.calendar-layout{grid-template-columns:1fr}.day{min-height:58px;padding:5px}.day-time{font-size:9px}.summary-cards{gap:6px}.summary-tile{padding:12px}.summary-tile b{font-size:16px}.fields{grid-template-columns:1fr}.field.wide{grid-column:auto}.section-heading h2{font-size:30px}.setting-row{grid-template-columns:1fr;gap:6px}.panel{padding:18px}.timer-clock{font-size:54px}.hero-bottom span:last-child{font-size:8px}}
 @media(max-width:400px){.day{min-height:49px}.day-number{font-size:11px}.day-time{font-size:8px}.visitor{display:none}.timer-clock{font-size:46px}}
