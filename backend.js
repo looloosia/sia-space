@@ -9,10 +9,18 @@ const client=window.supabase.createClient(url,key,{auth:{persistSession:true,aut
 $("localNotice").textContent="서버 연결 모드입니다. 회원 등급에 따른 서버 조회는 활성화할 수 있지만, 새 기록은 관리자가 '서버에 게시'를 눌러야 다른 방문자에게 반영됩니다.";
 window.SIA_SUPABASE=client;
 let user=null,admin=false,memberLevel=1,loading=false,adminLoaded=false;
+const snapshotBackupKey="sia-space-local-precloud-backup-v2";
+function applyIdentity(){
+ document.documentElement.classList.toggle("sia-admin",admin);
+ document.documentElement.classList.toggle("sia-visitor",!admin);
+ $("settingsNav").textContent=admin?"사이트 설정":"관리자 로그인";
+ $("restoreLocalDraft").hidden=!(admin&&localStorage.getItem(snapshotBackupKey));
+}
 const loadingButton=(id,isLoading)=>{$(id).disabled=isLoading;};
 async function query(q){const {data,error}=await q;if(error)throw error;return data;}
 const rows=table=>query(client.from(table).select("*").limit(5000));
 function view(){
+ applyIdentity();
  $("cloudLoginForm").hidden=!!user;$("cloudLogout").hidden=!user;$("cloudAdminTools").hidden=!admin;
  $("cloudPublish").disabled=!admin;
  $("cloudViewerRefresh").hidden=false;
@@ -20,6 +28,7 @@ function view(){
  else status("서버 연결됨 · 방문자 (1등급). 관리자가 허용한 자료만 표시됩니다.");
 }
 async function who(){
+ document.documentElement.classList.remove("sia-public-loaded");
  const {data,error}=await client.auth.getUser();user=error?null:data.user;
  adminLoaded=false;
  let profile=null;if(user){profile=await query(client.from("member_profiles").select("member_level,is_admin").eq("id",user.id).maybeSingle());}
@@ -38,7 +47,7 @@ async function loadCloud({force=false}={}){
  try{
   const old=window.SIA_BRIDGE.snapshot();
   const hasLocal=Boolean(old.entries.length||old.watch.length||old.sessions.length||old.contact.phone||old.contact.email);
-  if(hasLocal&&!force){status("이 브라우저에 기존 기록이 있어 자동 덮어쓰기를 건너뛰었습니다. 관리자 로그인 후 백업하고 서버 기록을 불러오세요.");return;}
+  if(hasLocal&&!force&&admin){status("이 브라우저에 기존 기록이 있어 자동 덮어쓰기를 건너뛰었습니다. 관리자 로그인 후 백업하고 서버 기록을 불러오세요.");return;}
   const [levels,pages,brand,presence,content,sessions,contacts]=await Promise.all([
    rows("member_levels"),rows("page_visibility"),rows("site_branding"),rows("site_presence"),rows("content_items"),rows("practice_sessions"),rows("contact_methods")
   ]);
@@ -55,7 +64,6 @@ async function loadCloud({force=false}={}){
    currentStatus:pre?.activity||"비공개",statusAt:pre?.changed_at?Date.parse(pre.changed_at):null,
    statusLevel:pre?.min_level||pageRules.now||1,
    practiceLevel:sessions[0]?.min_level||pageRules.practice||1,
-   locationLevel:Math.max(2,pageRules.location||4),
    contactLevel:contacts[0]?.min_level||pageRules.contact||2,
    previewLevel:memberLevel,
    entries:publicContent.filter(x=>!["영화","드라마"].includes(x.kind)),
@@ -69,6 +77,7 @@ async function loadCloud({force=false}={}){
   try{if(branding.hero_image_url)window.localStorage.setItem("sia-space-hero-photo-v1",branding.hero_image_url);else window.localStorage.removeItem("sia-space-hero-photo-v1");}catch{}
   document.dispatchEvent(new CustomEvent("sia:photo-sync",{detail:{url:branding.hero_image_url||""}}));
   reconcileVisibility(pageRules);
+  document.documentElement.classList.add("sia-public-loaded");
   document.documentElement.classList.remove("cloud-authorizing");
   if(admin)adminLoaded=true;
   view();status((admin?"관리자":"방문자")+" · 서버 기록을 불러왔습니다. "+(admin?"변경 후 '서버에 게시'를 눌러야 반영됩니다.":"")); 
@@ -145,17 +154,31 @@ $("cloudLoginForm").addEventListener("submit",async e=>{
   const {error}=await client.auth.signInWithPassword({email:$("cloudEmail").value.trim(),password:$("cloudPassword").value});
   if(error)throw error;$("cloudPassword").value="";await who();
   status(admin?"관리자 로그인 성공 · 서버 기록 불러오기 또는 게시를 선택하세요.":"회원 로그인 성공 · 등급에 맞는 서버 기록을 불러오는 중입니다.");
-  if(!admin)await loadCloud();
+  if(!admin)await loadCloud({force:true});
  }catch(err){status("로그인 실패: "+String(err.message||err));}
  finally{btn.disabled=false;}
 });
 $("cloudLogout").addEventListener("click",async()=>{
  if(!confirm("로그아웃하면 이 브라우저의 기록을 서버의 공개 자료로 바꿉니다. 저장하지 않은 로컬 기록이 있다면 먼저 백업하세요. 계속할까요?"))return;
+ document.documentElement.classList.remove("sia-admin","sia-public-loaded");
+ document.documentElement.classList.add("sia-visitor","cloud-authorizing");
  await client.auth.signOut();user=null;admin=false;memberLevel=1;adminLoaded=false;
  window.SIA_BRIDGE.hydrate({entries:[],watch:[],sessions:[],contact:{phone:"",email:""},currentStatus:"비공개",statusAt:null,previewLevel:1});
  document.documentElement.classList.add("cloud-authorizing");view();await loadCloud({force:true});
 });
 $("cloudViewerRefresh").onclick=async()=>{if(!confirm("현재 브라우저 기록을 서버에서 불러온 내용으로 바꾸고 싶나요? 로컬 기록은 먼저 JSON 백업하세요."))return;await loadCloud({force:true});};
+$("restoreLocalDraft").onclick=()=>{
+ if(!admin)return;
+ const raw=localStorage.getItem(snapshotBackupKey);
+ if(!raw){status("이전에 보관된 로컬 기록이 없습니다.");return;}
+ if(!confirm("서버 연결 이전의 로컬 기록을 현재 편집 화면에 복구할까요? 서버에는 '서버에 게시'를 누르기 전까지 반영되지 않습니다."))return;
+ try{
+  const data=JSON.parse(raw);
+  if(data.version!==2||!Array.isArray(data.entries)||!Array.isArray(data.watch)||!Array.isArray(data.sessions))throw Error("백업 데이터 형식이 올바르지 않습니다.");
+  window.SIA_BRIDGE.hydrate(data);
+  status("예전 로컬 기록을 복구했습니다. 다른 기록과 충돌하지 않도록 확인한 뒤 게시하세요.");
+ }catch(e){status("복구 실패: "+String(e.message||e));}
+};
 $("cloudLoad").onclick=async()=>{if(!confirm("현재 브라우저 데이터를 서버 내용으로 바꿉니다. 저장하지 않은 기록이 있으면 JSON 백업 후 진행하세요. 계속할까요?"))return;await loadCloud({force:true});};
 $("cloudPublish").onclick=pushCloud;
 window.SIA_TMDB_SEARCH=async(title,kind)=>{
@@ -165,6 +188,6 @@ window.SIA_TMDB_SEARCH=async(title,kind)=>{
  return Array.isArray(data?.results)?data.results:[];
 };
 (async()=>{
- try{await who();if(!admin)await loadCloud();}catch(err){status("서버 연결 오류: "+String(err.message||err));}
+ try{await who();if(!admin)await loadCloud({force:true});}catch(err){status("서버 연결 오류: "+String(err.message||err));}
 })();
 })();
