@@ -67,7 +67,7 @@ alter table public.page_visibility enable row level security;
 create policy "anyone can read page visibility labels" on public.page_visibility for select to anon,authenticated using (true);
 create policy "admin controls page visibility" on public.page_visibility for all to authenticated using ((select public.sia_is_admin())) with check ((select public.sia_is_admin()));
 insert into public.page_visibility (slug,min_level) values
- ('about',1),('now',1),('practice',1),('watch',1),('collections',1),('location',4),('community',1),('contact',2)
+ ('about',1),('now',1),('practice',1),('watch',1),('collections',1),('community',1),('contact',2)
 on conflict do nothing;
 
 create table if not exists public.site_branding (
@@ -150,25 +150,6 @@ create policy "allowed users read contacts" on public.contact_methods for select
      coalesce((select min_level from public.page_visibility where slug='contact'),10) <= (select public.sia_member_level())));
 create policy "admin writes contacts" on public.contact_methods for all to authenticated
   using ((select public.sia_is_admin())) with check ((select public.sia_is_admin()));
-
--- 위치 정보는 기본 OFF: 관리자와 허용 등급 외에는 SELECT 자체가 차단됩니다.
--- 아직 스마트폰 위치 업로드 기능과 주기 갱신은 구현하지 않았습니다.
-create table if not exists public.live_location (
-  id integer primary key default 1 check (id=1),
-  latitude double precision check(latitude between -90 and 90),
-  longitude double precision check(longitude between -180 and 180),
-  enabled boolean not null default false,
-  min_level integer not null default 4 check(min_level between 2 and 10),
-  updated_at timestamptz
-);
-alter table public.live_location enable row level security;
-create policy "enabled location only for allowed users" on public.live_location for select to anon,authenticated
-  using ((select public.sia_is_admin()) or
-  (enabled and min_level <= (select public.sia_member_level()) and
-   coalesce((select min_level from public.page_visibility where slug='location'),10) <= (select public.sia_member_level())));
-create policy "admin manages location" on public.live_location for all to authenticated
-  using ((select public.sia_is_admin())) with check ((select public.sia_is_admin()));
-insert into public.live_location(id,enabled,min_level) values (1,false,4) on conflict do nothing;
 
 -- 대표 사진용 공개 버킷만 만듭니다. 비공개 사진은 별도 PRIVATE 버킷을 사용해야 합니다.
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
