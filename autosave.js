@@ -206,4 +206,5 @@ document.addEventListener("sia:auth",()=>{if(getAdmin())flush();});
 $("autoSyncRetry")?.addEventListener("click",()=>{failed=false;flush();});
 window.SIA_AUTOSAVE={retry:flush,hasPending:()=>queue.length>0,isBusy:()=>busy};
 if(queue.length)ui("서버에 저장하지 못한 변경사항 "+queue.length+"건이 있습니다. 관리자 로그인 후 재시도합니다.");
+if(queue.length&&getAdmin())flush();
 })();
