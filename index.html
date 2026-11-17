@@ -42,7 +42,7 @@
   </div>
 
   <section class="section" id="now" data-section="now">
-    <div class="section-heading"><div><div class="section-label">02 / 현재 상태</div><h2>현재 활동</h2></div><p>상태를 선택하면 이 브라우저의 화면에 반영됩니다. 방문자에게 보여주려면 서버 연동이 필요합니다.</p></div>
+    <div class="section-heading"><div><div class="section-label">01 / 현재 상태</div><h2>현재 활동</h2></div><p>관리자가 공개한 현재 활동을 표시합니다.</p></div>
     <div class="dashboard-grid">
       <div class="status-panel"><span class="eyebrow">현재 활동</span><h3 id="currentStatus">쉬는 중</h3><p id="statusUpdated" class="muted">아직 업데이트하지 않았어요.</p><div class="row owner-only">
         <label class="field" style="flex:1;max-width:300px">상태 선택<select id="statusSelect" class="select"></select></label>
@@ -55,7 +55,7 @@
   </section>
 
   <section class="section" id="practice" data-section="practice">
-    <div class="section-heading"><div><div class="section-label">03 / 연습과 공부</div><h2>연습 시간</h2></div><p>피아노 연습과 순공 시간을 재고, 종료한 기록을 날짜별 캘린더에 남겨요.</p></div>
+    <div class="section-heading"><div><div class="section-label">02 / 연습과 공부</div><h2>연습 시간</h2></div><p>피아노 연습·순공 시간을 초 단위로 표시합니다. 타이머 조작과 기록 저장은 관리자 전용입니다.</p></div>
     <div class="dashboard-grid">
       <div class="panel timer-view owner-only">
         <div class="row" style="justify-content:center"><label class="field" style="min-width:200px;text-align:left">타이머 종류<select id="timerKind"><option value="피아노 연습">피아노 연습</option><option value="순공">순공</option></select></label></div>
@@ -77,7 +77,7 @@
   </section>
 
   <section class="section" id="watch" data-section="watch">
-    <div class="section-heading"><div><div class="section-label">04 / 감상 기록</div><h2>영화·드라마 감상 기록</h2></div><p>날짜와 감상을 기록하고 항목마다 원하는 공개 등급을 지정할 수 있습니다.</p></div>
+    <div class="section-heading"><div><div class="section-label">03 / 감상 기록</div><h2>영화·드라마 감상 기록</h2></div><p>날짜와 감상을 기록하고 항목마다 원하는 공개 등급을 지정할 수 있습니다.</p></div>
     <div class="row spread" style="margin-bottom:15px"><label class="field" style="min-width:200px">제목 검색<input id="watchSearch" placeholder="작품 제목 검색"></label><button class="btn primary owner-only" id="watchAddToggle">+ 감상 기록 추가</button></div>
     <div id="watchList" class="cards-grid"></div>
     <p class="section-note" id="tmdbAttribution" hidden>이 사이트는 TMDB API를 사용하지만 TMDB의 보증이나 인증을 받지 않았습니다. <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">TMDB 정보 ↗</a></p>
@@ -95,7 +95,7 @@
   </section>
 
   <section class="collections section" id="collections" data-section="collections">
-    <div class="section-heading"><div><div class="section-label">05 / 나의 아카이브</div><h2>아카이브</h2></div><p>사진·책·장소·프로젝트·음악·유튜브·개인 위키·타임라인을 항목별로 관리할 수 있어요.</p></div>
+    <div class="section-heading"><div><div class="section-label">04 / 나의 아카이브</div><h2>아카이브</h2></div><p>사진·책·장소·프로젝트·음악·유튜브·개인 위키·타임라인의 공개 기록입니다.</p></div>
     <div class="category-bar" id="categoryBar"></div>
     <div class="row spread" style="margin-bottom:15px"><label class="field" style="min-width:220px">아카이브 검색<input id="entrySearch" placeholder="제목이나 메모 검색"></label><button class="btn primary owner-only" id="entryAddToggle">+ 항목 추가</button></div>
     <div id="entriesList" class="cards-grid"></div>
@@ -112,12 +112,12 @@
   </section>
 
   <section class="community section" id="community" data-section="community">
-    <div class="community-main"><div class="section-label">07 / 소통</div><p class="eyebrow" style="margin-top:30px">가까운 사람과 함께</p><h2>커뮤니티</h2><p class="body-copy">방명록, 질문과 답변, 댓글, 개인 메시지, 커피챗 등의 기능을 순차적으로 연결합니다.</p></div>
+    <div class="community-main"><div class="section-label">05 / 소통</div><p class="eyebrow" style="margin-top:30px">가까운 사람과 함께</p><h2>커뮤니티</h2><p class="body-copy">방명록, 질문과 답변, 댓글, 개인 메시지, 커피챗 등의 기능을 순차적으로 연결합니다.</p></div>
     <div class="access-panel"><div class="access-head"><span>회원 등급</span><span>미리보기</span></div><div id="gradePreview"></div><p class="access-note">등급별 열람과 관리자 편집은 서버 인증을 연결한 후 적용됩니다.</p></div>
   </section>
 
   <section class="section" id="contact" data-section="contact">
-    <div class="section-heading"><div><div class="section-label">08 / 연결</div><h2>소셜미디어·연락처</h2></div><p>공개된 소셜미디어와 연락 수단을 확인할 수 있습니다.</p></div>
+    <div class="section-heading"><div><div class="section-label">06 / 연결</div><h2>소셜미디어·연락처</h2></div><p>공개된 소셜미디어와 연락 수단을 확인할 수 있습니다.</p></div>
     <div class="contact-pane"><div class="social-grid" id="socialButtons"></div><div id="contactButtons" class="social-grid"></div></div>
     <p class="section-note">소셜미디어와 연락처 변경은 관리자 로그인 후 할 수 있습니다.</p>
   </section>
