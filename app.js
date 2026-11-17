@@ -17,13 +17,26 @@ if(!Object.hasOwn(historicalSections,"home")&&historicalSections.about)state.sec
 for(const slug of Object.values(archiveMap))if(!Object.hasOwn(historicalSections,slug)&&historicalSections.collections)state.sectionLevels[slug]=historicalSections.collections;
 delete state.locationLevel;
 delete state.sectionLevels.location;
-const save=()=>{state.contact={email:String(state.contact?.email||"")};delete state.locationLevel;if(state.sectionLevels)delete state.sectionLevels.location;try{localStorage.setItem("sia-space-local-v2",JSON.stringify(state));}catch{toast("저장 공간이 부족합니다.");}};
+const snapshot=()=>JSON.parse(JSON.stringify(state));
+let savedSnapshot=snapshot();
+const save=({localOnly=false}={})=>{
+ state.contact={email:String(state.contact?.email||"")};
+ delete state.locationLevel;if(state.sectionLevels)delete state.sectionLevels.location;
+ const before=savedSnapshot,after=snapshot();
+ try{localStorage.setItem("sia-space-local-v2",JSON.stringify(after));}
+ catch{toast("저장 공간이 부족합니다.");return;}
+ savedSnapshot=after;
+ if(!localOnly&&window.SIA_IDENTITY?.admin){
+  document.dispatchEvent(new CustomEvent("sia:local-change",{detail:{before,after}}));
+ }
+};
 const date=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-"),today=()=>date(new Date());
 const time=ms=>{let s=Math.floor(Math.max(0,ms)/1000);return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(x=>String(x).padStart(2,"0")).join(":");};
 const duration=ms=>time(ms);
 const id=()=>Math.random().toString(36).slice(2)+Date.now(),level=n=>n+"등급 · "+(state.levels[n-1]||"등급");
 let month=new Date();month.setDate(1);let selected=today(),editingWatch=null,editingEntry=null;
 function toast(s){const el=$("toast");el.textContent=s;el.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.hidden=true,3500);}
+window.SIA_NOTIFY=toast;
 function options(el,values,current){el.replaceChildren(...values.map(v=>new Option(v[0],String(v[1]))));if(current!==undefined)el.value=String(current);}
 function levelOptions(){document.querySelectorAll(".level-options").forEach(el=>{let v=el.value;options(el,state.levels.map((name,i)=>[(i+1)+"등급 · "+name,i+1]),v||1);});}
 function settings(){
@@ -45,7 +58,7 @@ function settings(){
  $("sectionEditor").replaceChildren();
  Object.entries(sections).forEach(([key,label])=>{const row=make("div","setting-row"),sel=make("select","select");
   options(sel,state.levels.map((n,i)=>[(i+1)+"등급 이상",i+1]),state.sectionLevels[key]||1);
-  sel.onchange=()=>{state.sectionLevels[key]=Number(sel.value);save();toast("등급 설정을 변경했습니다. 서버에 게시하면 방문자에게 적용됩니다.");};row.append(make("label","",label),sel);$("sectionEditor").append(row);
+  sel.onchange=()=>{state.sectionLevels[key]=Number(sel.value);save();toast("등급 설정을 변경했습니다. 자동으로 서버에 반영됩니다.");};row.append(make("label","",label),sel);$("sectionEditor").append(row);
  });
  $("socialInstagram").value=state.social.instagram||"";$("socialYoutube").value=state.social.youtube||"";$("socialBlog").value=state.social.blog||"";
  $("contactEmail").value=state.contact.email||"";
@@ -53,7 +66,7 @@ function settings(){
 }
 $("addLevel").onclick=()=>{if(state.levels.length>=10)return;state.levels.push("새 등급 "+(state.levels.length+1));save();settings();};
 ["statusLevel","practiceLevel","contactLevel","previewLevel"].forEach(key=>$(key).onchange=()=>{state[key]=Number($(key).value);save();settings();});
-$("saveStatus").onclick=()=>{state.currentStatus=$("statusSelect").value;state.statusAt=Date.now();save();settings();toast("이 브라우저의 상태를 저장했습니다.");};
+$("saveStatus").onclick=()=>{state.currentStatus=$("statusSelect").value;state.statusAt=Date.now();save();settings();toast("상태를 서버에 저장하는 중입니다.");};
 $("newStatusForm").onsubmit=e=>{e.preventDefault();const v=$("newStatusInput").value.trim();if(!v||state.statuses.includes(v)||state.statuses.length>=30)return;state.statuses.push(v);$("newStatusInput").value="";save();settings();};
 const elapsed=()=>Math.max(0,(Number(state.timer.elapsedMs)||0)+(state.timer.active?Math.max(0,Date.now()-state.timer.startedAt):0));
 function timerRender(){
@@ -68,7 +81,7 @@ $("timerPause").onclick=()=>{state.timer.elapsedMs=elapsed();state.timer.active=
 $("timerFinish").onclick=()=>{
  const ms=elapsed();if(ms<1000)return;if(!confirm(state.timer.kind+" "+duration(ms)+"을 오늘 기록으로 저장할까요?"))return;
  state.sessions.push({id:id(),date:today(),kind:state.timer.kind,elapsedMs:ms,created:Date.now()});
- state.timer={kind:state.timer.kind,active:false,startedAt:null,elapsedMs:0};save();timerRender();calendar();renderSummary();toast("연습 시간을 기록했습니다.");
+ state.timer={kind:state.timer.kind,active:false,startedAt:null,elapsedMs:0};save();timerRender();calendar();renderSummary();toast("시간 기록을 서버에 저장하는 중입니다.");
 };
 setInterval(()=>{if(state.timer.active)timerRender();},1000);
 function renderSummary(){
@@ -176,7 +189,7 @@ $("watchForm").onsubmit=e=>{
  if(!entry.title||!entry.date)return;
  if(entry.posterUrl&&!validUrl(entry.posterUrl))return toast("포스터는 https:// 주소만 등록할 수 있습니다.");
  state.watch=state.watch.filter(x=>x.id!==editingWatch);state.watch.push(entry);
- save();$("watchForm").hidden=true;editingWatch=null;cards("watch");toast("감상 기록을 저장했습니다.");
+ save();$("watchForm").hidden=true;editingWatch=null;cards("watch");toast("감상 기록을 서버에 저장하는 중입니다.");
 };
 $("entryForm").onsubmit=e=>{
  e.preventDefault();const old=state.entries.find(x=>x.id===editingEntry),url=$("entryUrl").value.trim();
@@ -198,14 +211,14 @@ function renderSocial(){
 $("socialForm").onsubmit=e=>{
  e.preventDefault();const vals={instagram:$("socialInstagram").value.trim(),youtube:$("socialYoutube").value.trim(),blog:$("socialBlog").value.trim()};
  for(const [k,hosts] of Object.entries({instagram:["instagram.com"],youtube:["youtube.com","youtu.be"],blog:["blog.naver.com"]})){if(vals[k]&&!socialUrl(vals[k],hosts))return toast("해당 서비스의 올바른 https:// 주소를 입력하세요.");}
- state.social=vals;save();renderSocial();toast("소셜 링크를 저장했습니다.");
+ state.social=vals;save();renderSocial();toast("소셜 링크를 서버에 저장하는 중입니다.");
 };
 function renderContact(){
  const box=$("contactButtons");box.replaceChildren();
  if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.contact.email||"")){const a=make("a","social-link","이메일 보내기 ↗");a.href="mailto:"+state.contact.email;box.append(a);}
  if(!box.children.length)box.append(make("p","muted","아직 공개된 이메일 주소가 없습니다."));
 }
-$("contactForm").onsubmit=e=>{e.preventDefault();state.contact={email:$("contactEmail").value.trim()};state.contactLevel=Number($("contactLevel").value);save();renderContact();toast("이메일 공개 설정을 저장했습니다. 서버에 게시하면 방문자에게 적용됩니다.");};
+$("contactForm").onsubmit=e=>{e.preventDefault();state.contact={email:$("contactEmail").value.trim()};state.contactLevel=Number($("contactLevel").value);save();renderContact();toast("이메일 설정을 서버에 저장하는 중입니다. 자동으로 서버에 반영됩니다.");};
 $("exportData").onclick=()=>{
  const blob=new Blob([JSON.stringify({app:"SIA SPACE",exportedAt:new Date().toISOString(),data:state},null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=make("a");a.href=url;a.download="sia-space-backup-"+today()+".json";document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 };
@@ -213,7 +226,7 @@ $("importData").onchange=async e=>{
  const f=e.target.files?.[0];if(!f)return;
  try{if(f.size>4000000)throw Error("파일이 너무 큽니다.");const obj=JSON.parse(await f.text());if(obj.app!=="SIA SPACE"||obj.data?.version!==2)throw Error("백업 형식이 다릅니다.");if(!confirm("현재 기록을 대체할까요?"))return;
   const imported=obj.data;if(!Array.isArray(imported.levels)||!Array.isArray(imported.sessions)||!Array.isArray(imported.watch)||!Array.isArray(imported.entries))throw Error("백업 데이터 형식 오류");
-  state={...defaults(),...imported};state.levels=state.levels.slice(0,10);state.timer={...defaults().timer};save();settings();calendar();cards("watch");cards("entries");timerRender();toast("백업을 불러왔습니다.");
+  state={...defaults(),...imported};state.levels=state.levels.slice(0,10);state.timer={...defaults().timer};save({localOnly:true});settings();calendar();cards("watch");cards("entries");timerRender();toast("백업을 불러왔습니다.");
  }catch(err){toast(err.message||"백업을 읽을 수 없습니다.");}finally{e.target.value="";}
 };
 // Mobile/tablet navigation is handled only in script.js to avoid double toggling.
@@ -223,7 +236,7 @@ window.SIA_BRIDGE={
  state={...state,...patch};
  state.sectionLevels={...defaults().sectionLevels,...state.sectionLevels};
  delete state.locationLevel;if(state.sectionLevels)delete state.sectionLevels.location;
- save();settings();timerRender();calendar();categories();cards("watch");
+ save({localOnly:true});settings();timerRender();calendar();categories();cards("watch");
  document.dispatchEvent(new Event("sia:menu-data-updated"));
 }
 };
