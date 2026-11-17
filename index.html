@@ -192,9 +192,56 @@
       <p class="section-note">사진은 이미지 주소로만 미리보기를 지원합니다. 실제 사진 파일 업로드는 저장소 연결 후 추가됩니다.</p>
     </form>
 
-  <section class="community section route-page" id="community" data-section="community">
-    <div class="community-main"><div class="section-label">05 / 소통</div><p class="eyebrow" style="margin-top:30px">가까운 사람과 함께</p><h2>커뮤니티</h2><p class="body-copy">방명록, 질문과 답변, 댓글, 개인 메시지, 커피챗 등의 기능을 순차적으로 연결합니다.</p></div>
-    <div class="access-panel"><div class="access-head"><span>회원 등급</span><span>미리보기</span></div><div id="gradePreview"></div><p class="access-note">등급별 열람과 관리자 편집은 서버 인증을 연결한 후 적용됩니다.</p></div>
+  <section class="section community-section route-page" id="community" data-section="community">
+    <div class="section-heading">
+      <div><div class="section-label">05 / 소통</div><h2>소통</h2></div>
+      <p>방명록, 질문과 답변, 커피챗 신청으로 직접 소통하는 공간입니다.</p>
+    </div>
+    <div class="community-tabs" role="tablist" aria-label="소통 유형">
+      <button id="communityTabGuestbook" class="community-tab active" type="button" role="tab" aria-selected="true" aria-controls="communityPanelGuestbook" data-community-tab="guestbook">방명록</button>
+      <button id="communityTabQuestions" class="community-tab" type="button" role="tab" aria-selected="false" aria-controls="communityPanelQuestions" data-community-tab="questions">질문과 답변</button>
+      <button id="communityTabCoffee" class="community-tab" type="button" role="tab" aria-selected="false" aria-controls="communityPanelCoffee" data-community-tab="coffee">커피챗</button>
+    </div>
+    <p class="community-status" id="communityStatus" role="status" aria-live="polite">소통 기능을 불러오는 중입니다.</p>
+
+    <div id="communityPanelGuestbook" class="community-panel" role="tabpanel" aria-labelledby="communityTabGuestbook" data-community-panel="guestbook">
+      <div class="community-panel-heading"><h3>방명록</h3><p>방문한 흔적을 남겨 주세요. 관리자가 답글을 달 수 있습니다.</p></div>
+      <div id="guestbookWriteNotice" class="community-permission-note"></div>
+      <form id="guestbookForm" class="community-composer" hidden>
+        <label class="field" for="guestbookBody">방명록 내용</label>
+        <textarea id="guestbookBody" maxlength="700" rows="3" required placeholder="전하고 싶은 글을 남겨 주세요."></textarea>
+        <div class="community-form-actions"><span>최대 700자 · 작성한 글은 이 메뉴에 공개됩니다.</span><button class="btn primary" type="submit">방명록 남기기</button></div>
+      </form>
+      <div class="community-list" id="guestbookList"></div>
+    </div>
+
+    <div id="communityPanelQuestions" class="community-panel" role="tabpanel" aria-labelledby="communityTabQuestions" data-community-panel="questions" hidden>
+      <div class="community-panel-heading"><h3>질문과 답변</h3><p>궁금한 내용을 질문하고 답변을 확인하는 공간입니다.</p></div>
+      <div id="questionWriteNotice" class="community-permission-note"></div>
+      <form id="questionForm" class="community-composer" hidden>
+        <label class="field" for="questionTitle">질문 제목</label>
+        <input id="questionTitle" maxlength="120" minlength="2" required placeholder="질문 제목">
+        <label class="field" for="questionBody">질문 내용</label>
+        <textarea id="questionBody" maxlength="2000" rows="5" minlength="2" required placeholder="궁금한 내용을 입력해 주세요."></textarea>
+        <label class="community-check"><input id="questionPublic" type="checkbox" checked> 질문과 답변을 다른 방문자에게도 공개</label>
+        <p class="community-privacy-note">체크를 해제하면 질문과 답변은 본인과 관리자만 볼 수 있습니다.</p>
+        <div class="community-form-actions"><span>답변은 이 페이지에서 확인할 수 있습니다.</span><button class="btn primary" type="submit">질문 등록</button></div>
+      </form>
+      <div class="community-list" id="questionList"></div>
+    </div>
+
+    <div id="communityPanelCoffee" class="community-panel" role="tabpanel" aria-labelledby="communityTabCoffee" data-community-panel="coffee" hidden>
+      <div class="community-panel-heading"><h3>커피챗 신청</h3><p>커피 한 잔을 함께할 시간을 제안해 주세요. 신청 내용과 답변은 신청자 본인과 관리자만 확인할 수 있습니다.</p></div>
+      <div id="coffeeWriteNotice" class="community-permission-note"></div>
+      <form id="coffeeForm" class="community-composer" hidden>
+        <label class="field" for="coffeePreferredTime">가능한 날짜·시간대</label>
+        <input id="coffeePreferredTime" maxlength="200" minlength="2" required placeholder="예: 토요일 오후, 평일 저녁 등">
+        <label class="field" for="coffeeMessage">메시지</label>
+        <textarea id="coffeeMessage" maxlength="1000" rows="4" minlength="2" required placeholder="간단한 인사나 전하고 싶은 말을 적어 주세요."></textarea>
+        <div class="community-form-actions"><span>신청만으로 약속이 확정되지는 않습니다.</span><button class="btn primary" type="submit">커피챗 신청</button></div>
+      </form>
+      <div class="community-list" id="coffeeList"></div>
+    </div>
   </section>
 
   <section class="section route-page" id="contact" data-section="contact">
@@ -261,6 +308,13 @@
     <div class="section-heading"><div><div class="section-label">사이트 관리</div><h2>관리자 설정</h2></div><p>메뉴별 공개 등급과 콘텐츠를 관리합니다. 변경 후 서버에 게시해야 방문자에게 적용됩니다.</p></div>
     <div class="row admin-publish-actions"><button class="btn primary owner-only" id="adminPublishShortcut" type="button">공개 범위·기록 서버에 게시</button><button class="btn owner-only" id="adminCloudLoadShortcut" type="button">서버 데이터 다시 불러오기</button></div><p id="adminPublishStatus" class="muted" role="status">메뉴별 조회 등급을 변경한 뒤 서버에 게시하세요.</p>
     <div class="setting-grid">
+      <div class="setting-block owner-only" id="communityModerationPanel">
+        <h3>소통 기능 · 글쓰기 등급</h3>
+        <p class="muted">소통 메뉴 자체의 조회 등급은 위의 ‘모든 메뉴의 공개 범위’에서 설정합니다. 여기서는 각 기능을 사용할 수 있는 최소 회원 등급을 정합니다. 변경 즉시 서버에 반영됩니다.</p>
+        <div id="communityPermissionEditor" class="stack"></div>
+        <p class="section-note" id="communityPermissionStatus" role="status">등록된 회원은 방명록과 질문을 남기고, 허용된 회원만 커피챗을 신청할 수 있습니다.</p>
+      </div>
+      <div class="setting-block owner-only"><h3>회원 등급 미리보기</h3><div id="gradePreview"></div></div>
       <div class="setting-block owner-only" id="memberApprovalsPanel">
         <h3>가입 신청 · 회원 등급 관리</h3>
         <p class="muted">이메일 인증을 마친 회원을 확인하고, 승인 또는 등급 조정을 할 수 있습니다. 가입 직후에는 1등급으로 제한됩니다.</p>
@@ -305,5 +359,6 @@
 <script src="signup.js" defer></script>
 <script src="stats.js" defer></script>
 <script src="access.js?v=mobile-20261117" defer></script>
+<script src="community.js?v=community-20261117" defer></script>
 </body>
 </html>
