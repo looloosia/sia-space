@@ -111,3 +111,12 @@ footer .brand{color:#374151}
  footer{padding:20px 16px}
 }
 @media(max-width:380px){.day-time{font-size:8px;letter-spacing:-.055em}.day{min-height:51px}.poster-result-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* 서버 인증 전에 이전 브라우저의 회원 전용 기록을 표시하지 않습니다. */
+html.cloud-authorizing [data-section],
+html.cloud-authorizing .hero .inline-status,
+html.cloud-authorizing .hero .text-link,
+html.cloud-authorizing #heroArt {visibility:hidden!important}
+#cloudAccountPanel{border-color:#cbd9ea}
+#cloudStatus{font-size:12px;line-height:1.9}
+.poster-result.selected{border:2px solid #416da6;background:#eaf2ff}
