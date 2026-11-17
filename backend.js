@@ -55,7 +55,7 @@ async function loadCloud({force=false}={}){
  if(loading)return;loading=true;status("서버 자료를 불러오는 중입니다.");
  try{
   const old=window.SIA_BRIDGE.snapshot();
-  const hasLocal=Boolean(old.entries.length||old.watch.length||old.sessions.length||old.contact.phone||old.contact.email);
+  const hasLocal=Boolean(old.entries.length||old.watch.length||old.sessions.length||old.contact.email);
   if(hasLocal&&!force&&admin){status("이 브라우저에 기존 기록이 있어 자동 덮어쓰기를 건너뛰었습니다. 관리자 로그인 후 백업하고 서버 기록을 불러오세요.");return;}
   const [levels,pages,brand,presence,content,sessions,contacts]=await Promise.all([
    rows("member_levels"),rows("page_visibility"),rows("site_branding"),rows("site_presence"),rows("content_items"),rows("practice_sessions"),rows("contact_methods")
@@ -79,7 +79,7 @@ async function loadCloud({force=false}={}){
    watch:publicContent.filter(x=>["영화","드라마"].includes(x.kind)),
    sessions:sessions.map(x=>({id:x.id,date:x.practiced_on,kind:x.kind,elapsedMs:1000*x.duration_seconds,created:Date.parse(x.created_at)||Date.now()})),
    social:{instagram:contacts.find(x=>x.kind==="instagram")?.destination||"",youtube:contacts.find(x=>x.kind==="youtube")?.destination||"",blog:contacts.find(x=>x.kind==="blog")?.destination||""},
-   contact:{phone:contacts.find(x=>x.kind==="phone")?.destination||"",email:contacts.find(x=>x.kind==="email")?.destination||""}
+   contact:{email:contacts.find(x=>x.kind==="email")?.destination||""}
   };
   if(s.levels.length<2)s.levels=old.levels;
   window.SIA_BRIDGE.hydrate(s);
@@ -125,7 +125,7 @@ async function pushCloud(){
   const levels=s.levels.slice(0,10).map((name,i)=>({level_number:i+1,name}));
   await replaceRows("member_levels","level_number",levels);
   await upsert("page_visibility",Object.entries(s.sectionLevels).filter(([slug])=>!["about","collections","location"].includes(slug)).map(([slug,min_level])=>({slug,min_level:Number(min_level)})));
-  const contacts=[...(s.contact.phone?[{kind:"phone",destination:s.contact.phone,min_level:s.contactLevel}]:[]),...(s.contact.email?[{kind:"email",destination:s.contact.email,min_level:s.contactLevel}]:[]),...Object.entries(s.social).filter(([,v])=>Boolean(v)).map(([kind,destination])=>({kind,destination,min_level:s.contactLevel}))];
+  const contacts=[...(s.contact.email?[{kind:"email",destination:s.contact.email,min_level:s.contactLevel}]:[]),...Object.entries(s.social).filter(([,v])=>Boolean(v)).map(([kind,destination])=>({kind,destination,min_level:s.contactLevel}))];
   await replaceRows("contact_methods","kind",contacts);
   let heroImageUrl=localStorage.getItem("sia-space-hero-photo-v1")||"";
   if(heroImageUrl.startsWith("data:image/")){
@@ -173,7 +173,7 @@ $("cloudLogout").addEventListener("click",async()=>{
  document.documentElement.classList.remove("sia-admin","sia-public-loaded");
  document.documentElement.classList.add("sia-visitor","cloud-authorizing");
  await client.auth.signOut();user=null;admin=false;approved=false;memberLevel=1;adminLoaded=false;
- window.SIA_BRIDGE.hydrate({entries:[],watch:[],sessions:[],contact:{phone:"",email:""},currentStatus:"비공개",statusAt:null,previewLevel:1});
+ window.SIA_BRIDGE.hydrate({entries:[],watch:[],sessions:[],contact:{email:""},currentStatus:"비공개",statusAt:null,previewLevel:1});
  document.documentElement.classList.add("cloud-authorizing");view();await loadCloud({force:true});
 });
 $("cloudViewerRefresh").onclick=async()=>{if(!confirm("현재 브라우저 기록을 서버에서 불러온 내용으로 바꾸고 싶나요? 로컬 기록은 먼저 JSON 백업하세요."))return;await loadCloud({force:true});};
