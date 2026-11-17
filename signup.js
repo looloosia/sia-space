@@ -3,7 +3,7 @@
 const $ = id => document.getElementById(id);
 const client = window.SIA_SUPABASE;
 const PENDING_KEY = "sia-space-signup-pending-email-v1";
-const AUTH_RETURN = "https://looloosia.github.io/sia-space/?auth=verified";
+const AUTH_RETURN = "https://looloosia.github.io/sia-space/";
 const buttons = {login:$("authLoginMode"), signup:$("authSignupMode")};
 const steps = [$("authStep1"),$("authStep2"),$("authStep3")];
 let renderNumber=0;
@@ -227,8 +227,14 @@ document.addEventListener("sia:auth",()=>{
   if(identity?.admin)fetchProfiles();
   renderProgress();
 });
-client?.auth.onAuthStateChange((_event,_session)=>{
-  setTimeout(()=>{renderProgress();},0);
+client?.auth.onAuthStateChange((event,_session)=>{
+  const wasAwaitingEmail=Boolean(pendingEmail());
+  setTimeout(()=>{
+    renderProgress();
+    if(event==="SIGNED_IN" && wasAwaitingEmail) {
+      document.getElementById("settings")?.scrollIntoView({block:"start",behavior:"smooth"});
+    }
+  },0);
 });
 renderProgress();
 if(new URLSearchParams(location.search).get("auth")==="verified"){
