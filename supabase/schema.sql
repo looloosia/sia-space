@@ -76,6 +76,7 @@ create table if not exists public.site_branding (
   social_instagram text not null default '',
   social_youtube text not null default '',
   social_blog text not null default '',
+  status_options jsonb not null default '["쉬는 중","피아노 연습 중","공부 중","수업 중","이동 중","독서 중","외출 중","작업 중","수면 중"]'::jsonb,
   updated_at timestamptz not null default now()
 );
 alter table public.site_branding enable row level security;
