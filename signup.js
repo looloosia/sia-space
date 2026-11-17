@@ -232,12 +232,12 @@ client?.auth.onAuthStateChange((event,_session)=>{
   setTimeout(()=>{
     renderProgress();
     if(event==="SIGNED_IN" && wasAwaitingEmail) {
-      document.getElementById("settings")?.scrollIntoView({block:"start",behavior:"smooth"});
+      location.hash="#settings";
     }
   },0);
 });
 renderProgress();
 if(new URLSearchParams(location.search).get("auth")==="verified"){
-  requestAnimationFrame(()=>document.getElementById("settings")?.scrollIntoView({block:"start"}));
+  location.hash="#settings";
 }
 })();
