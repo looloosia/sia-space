@@ -8,7 +8,7 @@ const ROUTES = {
  youtube:"유튜브",wiki:"개인 기록",timeline:"타임라인",
  community:"소통",contact:"연락처",settings:"로그인·회원가입",admin:"관리자 설정"
 };
-const ARCHIVES = new Set(["photos","books","places","projects","music","youtube","wiki","timeline"]);
+const ARCHIVES = new Set(["watch","photos","books","places","projects","music","youtube","wiki","timeline"]);
 const pages = [...document.querySelectorAll(".route-page")];
 const phoneQuery = window.matchMedia("(max-width: 760px)");
 let nextAfterLogin = null;
