@@ -360,3 +360,11 @@ html.cloud-authorizing #settings{visibility:visible!important}
  .community-composer{padding:13px 11px}
  .community-form-actions .btn{width:100%}
 }
+
+/* Manager-facing automatic save feedback */
+.auto-sync-panel{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid #d5e2ef;border-radius:7px;background:#f2f7fc;padding:13px 16px;margin:12px 0 18px}
+.auto-sync-panel p{flex:1;margin:0;color:#365b82;font-size:12px;line-height:1.75}
+.auto-sync-panel p[data-sync-state="success"]{color:#267249}
+.auto-sync-panel p[data-sync-state="error"]{color:#a63b3b;font-weight:600}
+.auto-sync-panel #autoSyncRetry{flex-shrink:0}
+@media(max-width:760px){.auto-sync-panel{align-items:stretch}.auto-sync-panel #autoSyncRetry{width:100%}}
