@@ -10,7 +10,9 @@ state.levels=state.levels.slice(0,10);state.sessions=Array.isArray(state.session
 state.timer=state.timer&&typeof state.timer==="object"?state.timer:defaults().timer;
 if(!state.timer.active||!Number.isFinite(state.timer.startedAt)||state.timer.startedAt>Date.now()){state.timer.active=false;state.timer.startedAt=null;}
 state.social=state.social||defaults().social;state.contact=state.contact||defaults().contact;state.sectionLevels=state.sectionLevels||defaults().sectionLevels;
-const save=()=>{try{localStorage.setItem("sia-space-local-v2",JSON.stringify(state));}catch{toast("저장 공간이 부족합니다.");}};
+delete state.locationLevel;
+delete state.sectionLevels.location;
+const save=()=>{delete state.locationLevel;if(state.sectionLevels)delete state.sectionLevels.location;try{localStorage.setItem("sia-space-local-v2",JSON.stringify(state));}catch{toast("저장 공간이 부족합니다.");}};
 const date=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-"),today=()=>date(new Date());
 const time=ms=>{let s=Math.floor(Math.max(0,ms)/1000);return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(x=>String(x).padStart(2,"0")).join(":");};
 const duration=ms=>time(ms);
@@ -164,7 +166,7 @@ $("importData").onchange=async e=>{
 const menu=$("menuButton"),nav=$("mainNav");menu.onclick=()=>{const opened=nav.classList.toggle("open");menu.setAttribute("aria-expanded",String(opened));};nav.querySelectorAll("a").forEach(a=>a.onclick=()=>{nav.classList.remove("open");menu.setAttribute("aria-expanded","false");});
 window.SIA_BRIDGE={
  snapshot:()=>JSON.parse(JSON.stringify(state)),
- hydrate:(patch)=>{state={...state,...patch};save();settings();timerRender();calendar();categories();cards("watch");cards("entries");}
+ hydrate:(patch)=>{state={...state,...patch};delete state.locationLevel;if(state.sectionLevels)delete state.sectionLevels.location;save();settings();timerRender();calendar();categories();cards("watch");cards("entries");}
 };
 settings();timerRender();calendar();categories();cards("watch");cards("entries");
 })();
