@@ -45,7 +45,7 @@ function settings(){
  $("sectionEditor").replaceChildren();
  Object.entries(sections).forEach(([key,label])=>{const row=make("div","setting-row"),sel=make("select","select");
   options(sel,state.levels.map((n,i)=>[(i+1)+"등급 이상",i+1]),state.sectionLevels[key]||1);
-  sel.onchange=()=>{state.sectionLevels[key]=Number(sel.value);save();toast("공개 범위 미리보기를 저장했습니다.");};row.append(make("label","",label),sel);$("sectionEditor").append(row);
+  sel.onchange=()=>{state.sectionLevels[key]=Number(sel.value);save();toast("등급 설정을 변경했습니다. 서버에 게시하면 방문자에게 적용됩니다.");};row.append(make("label","",label),sel);$("sectionEditor").append(row);
  });
  $("socialInstagram").value=state.social.instagram||"";$("socialYoutube").value=state.social.youtube||"";$("socialBlog").value=state.social.blog||"";
  $("contactPhone").value=state.contact.phone||"";$("contactEmail").value=state.contact.email||"";
