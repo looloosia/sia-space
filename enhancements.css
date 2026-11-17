@@ -232,3 +232,47 @@ html.cloud-authorizing #settings{visibility:visible!important}
  .archive-nav{display:block;width:100%}
  .archive-nav-menu{position:static;box-shadow:none;border:0;background:#f7f9fc;padding:4px 12px 12px}
 }
+
+
+/* Mobile: the site is one continuous, access-aware scroll instead of one routed page. */
+@media(max-width:760px){
+ .route-page{scroll-margin-top:74px}
+ .mobile-restricted{
+  min-height:0;
+  padding-top:34px;
+  padding-bottom:34px;
+ }
+ .mobile-restricted > :not(.mobile-access-placeholder){display:none!important}
+ .mobile-access-placeholder{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  grid-column:1/-1;
+  width:100%;
+  min-height:170px;
+  text-align:center;
+  background:#f1f5fa;
+  border:1px solid #d7e1ed;
+  border-radius:9px;
+  padding:28px 18px;
+  margin:0;
+ }
+ .mobile-access-placeholder[hidden]{display:none!important}
+ .mobile-access-title{font-size:18px;margin:0 0 9px;color:#354a65;font-weight:700}
+ .mobile-access-message{font-size:13px;margin:0;color:#66768b}
+ .mobile-access-login{margin-top:17px}
+ #accessGate{display:none!important}
+ #mainNav.desktop-nav{
+  z-index:160;
+  max-height:calc(100dvh - 60px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  align-items:stretch;
+  box-shadow:0 12px 24px #2230471c;
+ }
+ #mainNav.desktop-nav.open{display:flex!important}
+ #mainNav.desktop-nav>a{display:block;padding:9px 14px}
+ #mainNav .archive-nav summary{display:block;padding:12px 14px}
+ #mainNav .archive-nav-menu>a{display:block}
+}
