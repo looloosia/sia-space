@@ -13,6 +13,8 @@ function setMode(signup){
 }
 authButtons.login.addEventListener("click",()=>setMode(false));
 authButtons.signup.addEventListener("click",()=>setMode(true));
+// Direct signup link: /sia-space/?signup=1#settings
+if(new URLSearchParams(window.location.search).get("signup")==="1")setMode(true);
 function statusCard(value){const p=document.createElement("p");p.className="muted";p.textContent=value;return p;}
 async function fetchProfiles(){
  const state=window.SIA_IDENTITY,client=window.SIA_SUPABASE,container=$("memberApprovals");
