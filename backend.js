@@ -13,7 +13,7 @@ const snapshotBackupKey="sia-space-local-precloud-backup-v2";
 function applyIdentity(){
  document.documentElement.classList.toggle("sia-admin",admin);
  document.documentElement.classList.toggle("sia-visitor",!admin);
- $("settingsNav").textContent=admin?"사이트 설정":"관리자 로그인";
+ $("settingsNav").textContent=admin?"사이트 설정":user?"내 계정":"로그인·회원가입";
  $("restoreLocalDraft").hidden=!(admin&&localStorage.getItem(snapshotBackupKey));
 }
 const loadingButton=(id,isLoading)=>{$(id).disabled=isLoading;};
