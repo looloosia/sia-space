@@ -13,7 +13,7 @@ state.social=state.social||defaults().social;state.contact=state.contact||defaul
 const save=()=>{try{localStorage.setItem("sia-space-local-v2",JSON.stringify(state));}catch{toast("저장 공간이 부족합니다.");}};
 const date=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-"),today=()=>date(new Date());
 const time=ms=>{let s=Math.floor(Math.max(0,ms)/1000);return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(x=>String(x).padStart(2,"0")).join(":");};
-const duration=ms=>{let n=Math.floor(Math.max(0,ms)/60000);return n>=60?Math.floor(n/60)+"시간 "+n%60+"분":n+"분";};
+const duration=ms=>time(ms);
 const id=()=>Math.random().toString(36).slice(2)+Date.now(),level=n=>n+"등급 · "+(state.levels[n-1]||"등급");
 let month=new Date();month.setDate(1);let selected=today(),category="전체",editingWatch=null,editingEntry=null;
 function toast(s){const el=$("toast");el.textContent=s;el.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.hidden=true,3500);}
@@ -94,10 +94,12 @@ function cards(kind){
  if(!matched.length){target.append(make("p","list-empty","아직 등록된 기록이 없습니다."));return;}
  matched.forEach(x=>{
   const card=make("article","entry-card");
+  if(watch&&validUrl(x.posterUrl)){const cover=make("div","poster-cover"),img=make("img");img.src=x.posterUrl;img.alt=x.title+" 포스터";img.loading="lazy";cover.append(img);card.append(cover);}
   if(!watch&&x.kind==="유튜브"&&videoId(x.url)){const f=make("iframe");f.src="https://www.youtube-nocookie.com/embed/"+videoId(x.url);f.title=x.title;f.loading="lazy";f.allowFullscreen=true;card.append(f);}
   if(!watch&&x.kind==="사진"&&validUrl(x.url)){const box=make("div","entry-illustration"),img=make("img");img.src=x.url;img.loading="lazy";img.alt=x.title;box.append(img);card.append(box);}
   card.append(make("span","eyebrow",x.kind),make("h3","",x.title),make("p","record-meta",(x.date||new Date(x.created).toLocaleDateString("ko-KR"))+" · "+level(x.minLevel||1)));
   if(x.body)card.append(make("p","record-note",x.body));
+  if(watch&&validUrl(x.posterSourceUrl)){const origin=make("a","poster-credit",x.posterSource==="tvmaze"?"TVmaze 작품 정보 ↗":x.posterSource==="itunes"?"Apple TV 작품 정보 ↗":"포스터 출처 ↗");origin.href=x.posterSourceUrl;origin.target="_blank";origin.rel="noopener noreferrer";card.append(origin);}
   if(!watch&&validUrl(x.url)){const a=make("a","link-button","링크 열기 ↗");a.href=x.url;a.target="_blank";a.rel="noopener noreferrer";card.append(a);}
   const foot=make("footer"),edit=make("button","link-button","수정"),del=make("button","link-button","삭제");
   edit.onclick=()=>openForm(kind,x);del.onclick=()=>{if(!confirm("이 기록을 삭제할까요?"))return;state[watch?"watch":"entries"]=items.filter(v=>v.id!==x.id);save();cards(kind);};
@@ -109,7 +111,7 @@ function videoId(v){try{const u=new URL(v);if(u.protocol!=="https:")return null;
 function categories(){const bar=$("categoryBar");bar.replaceChildren();["전체",...types].forEach(v=>{const b=make("button","chip"+(category===v?" active":""),v);b.onclick=()=>{category=v;categories();cards("entries");};bar.append(b);});}
 function openForm(kind,x){
  const watch=kind==="watch",form=$(watch?"watchForm":"entryForm");form.hidden=false;
- if(watch){editingWatch=x?.id||null;$("watchFormTitle").textContent=x?"감상 기록 수정":"감상 기록 추가";$("watchTitle").value=x?.title||"";$("watchKind").value=x?.kind||"영화";$("watchDate").value=x?.date||today();$("watchLevel").value=x?.minLevel||1;$("watchNote").value=x?.body||"";}
+ if(watch){editingWatch=x?.id||null;$("watchFormTitle").textContent=x?"감상 기록 수정":"감상 기록 추가";$("watchTitle").value=x?.title||"";$("watchKind").value=x?.kind||"영화";$("watchDate").value=x?.date||today();$("watchLevel").value=x?.minLevel||1;$("watchNote").value=x?.body||"";$("watchPoster").value=x?.posterUrl||"";$("watchPosterSource").value=x?.posterSource||"";$("watchPosterSourceUrl").value=x?.posterSourceUrl||"";$("posterResults").replaceChildren();}
  else{editingEntry=x?.id||null;$("entryFormTitle").textContent=x?"아카이브 수정":"아카이브 추가";$("entryTitle").value=x?.title||"";$("entryKind").value=x?.kind||(types.includes(category)?category:"사진");$("entryUrl").value=x?.url||"";$("entryLevel").value=x?.minLevel||1;$("entryBody").value=x?.body||"";}
  form.scrollIntoView({behavior:"smooth",block:"center"});
 }
@@ -120,8 +122,8 @@ $("entryCancel").onclick=()=>{$("entryForm").hidden=true;editingEntry=null;};
 $("watchSearch").oninput=()=>cards("watch");$("entrySearch").oninput=()=>cards("entries");
 $("watchForm").onsubmit=e=>{
  e.preventDefault();const old=state.watch.find(x=>x.id===editingWatch);
- const entry={id:old?.id||id(),created:old?.created||Date.now(),title:$("watchTitle").value.trim(),kind:$("watchKind").value,date:$("watchDate").value,minLevel:Number($("watchLevel").value),body:$("watchNote").value.trim()};
- if(!entry.title||!entry.date)return;state.watch=state.watch.filter(x=>x.id!==editingWatch);state.watch.push(entry);save();$("watchForm").hidden=true;editingWatch=null;cards("watch");toast("감상 기록을 저장했습니다.");
+ const entry={id:old?.id||id(),created:old?.created||Date.now(),title:$("watchTitle").value.trim(),kind:$("watchKind").value,date:$("watchDate").value,minLevel:Number($("watchLevel").value),body:$("watchNote").value.trim(),posterUrl:$("watchPoster").value.trim(),posterSource:$("watchPosterSource").value,posterSourceUrl:$("watchPosterSourceUrl").value};
+ if(!entry.title||!entry.date)return;if(entry.posterUrl&&!validUrl(entry.posterUrl))return toast("포스터는 https:// 주소만 등록할 수 있습니다.");state.watch=state.watch.filter(x=>x.id!==editingWatch);state.watch.push(entry);save();$("watchForm").hidden=true;editingWatch=null;cards("watch");toast("감상 기록을 저장했습니다.");
 };
 $("entryForm").onsubmit=e=>{
  e.preventDefault();const old=state.entries.find(x=>x.id===editingEntry),url=$("entryUrl").value.trim();
