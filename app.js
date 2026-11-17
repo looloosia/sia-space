@@ -161,5 +161,9 @@ $("importData").onchange=async e=>{
  }catch(err){toast(err.message||"백업을 읽을 수 없습니다.");}finally{e.target.value="";}
 };
 const menu=$("menuButton"),nav=$("mainNav");menu.onclick=()=>{const opened=nav.classList.toggle("open");menu.setAttribute("aria-expanded",String(opened));};nav.querySelectorAll("a").forEach(a=>a.onclick=()=>{nav.classList.remove("open");menu.setAttribute("aria-expanded","false");});
+window.SIA_BRIDGE={
+ snapshot:()=>JSON.parse(JSON.stringify(state)),
+ hydrate:(patch)=>{state={...state,...patch};save();settings();timerRender();calendar();categories();cards("watch");cards("entries");}
+};
 settings();timerRender();calendar();categories();cards("watch");cards("entries");
 })();
