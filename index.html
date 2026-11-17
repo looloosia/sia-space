@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" class="sia-visitor">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,7 +16,7 @@
 <header class="topbar">
   <a class="brand" href="#home" aria-label="SIA SPACE 처음으로">SIA <span>SPACE</span></a>
   <nav class="desktop-nav" aria-label="주 메뉴" id="mainNav">
-    <a href="#home">홈</a><a href="#now">현재 상태</a><a href="#practice">연습 기록</a><a href="#watch">영화·드라마</a><a href="#collections">아카이브</a><a href="#community">소통</a><a href="#settings">설정</a>
+    <a href="#home">홈</a><a href="#now">현재 상태</a><a href="#practice">연습 기록</a><a href="#watch">영화·드라마</a><a href="#collections">아카이브</a><a href="#community">소통</a><a href="#settings" id="settingsNav">관리자 로그인</a>
   </nav>
   <div class="top-actions">
     <span class="visitor">현재 보기 <b id="headerLevel">1등급</b></span>
@@ -38,18 +38,18 @@
   </section>
 
   <div id="localNotice" class="notice" role="status">
-    <strong>현재는 체험 버전입니다.</strong> 이 페이지에서 변경한 내용은 이 브라우저에만 저장됩니다. 다른 방문자와의 실시간 공유·실제 회원 등급 차단은 아직 연결되지 않았습니다. 비공개 정보나 실제 위치를 입력하지 마세요.
+    <strong>현재는 체험 버전입니다.</strong> 이 사이트는 아직 서버 로그인이 연결되지 않은 공개 미리보기입니다. 관리자 편집 기능은 로그인 연결 후 이용할 수 있습니다. 기존 기록은 보관되지만 다른 방문자에게 동기화되지 않습니다.
   </div>
 
   <section class="section" id="now" data-section="now">
     <div class="section-heading"><div><div class="section-label">02 / 현재 상태</div><h2>현재 활동</h2></div><p>상태를 선택하면 이 브라우저의 화면에 반영됩니다. 방문자에게 보여주려면 서버 연동이 필요합니다.</p></div>
     <div class="dashboard-grid">
-      <div class="status-panel"><span class="eyebrow">현재 활동</span><h3 id="currentStatus">쉬는 중</h3><p id="statusUpdated" class="muted">아직 업데이트하지 않았어요.</p><div class="row">
+      <div class="status-panel"><span class="eyebrow">현재 활동</span><h3 id="currentStatus">쉬는 중</h3><p id="statusUpdated" class="muted">아직 업데이트하지 않았어요.</p><div class="row owner-only">
         <label class="field" style="flex:1;max-width:300px">상태 선택<select id="statusSelect" class="select"></select></label>
         <button class="btn primary" id="saveStatus">상태 변경</button></div>
       </div>
-      <div class="panel soft"><h3>상태 공개 설정</h3><p>공개할 대상 등급과 상태 목록은 아래의 <a href="#settings"><u>설정</u></a>에서 바꿀 수 있습니다.</p>
-        <p class="muted">공개 등급: <strong id="statusAudience">1등급 이상</strong></p><p class="muted">위치 공유와는 별도 기능이며, 상태를 바꾼다고 GPS가 켜지지는 않습니다.</p>
+      <div class="panel soft owner-only"><h3>상태 공개 설정</h3><p>공개할 대상 등급과 상태 목록은 아래의 <a href="#settings"><u>설정</u></a>에서 바꿀 수 있습니다.</p>
+        <p class="muted">공개 등급: <strong id="statusAudience">1등급 이상</strong></p>
       </div>
     </div>
   </section>
@@ -57,7 +57,7 @@
   <section class="section" id="practice" data-section="practice">
     <div class="section-heading"><div><div class="section-label">03 / 연습과 공부</div><h2>연습 시간</h2></div><p>피아노 연습과 순공 시간을 재고, 종료한 기록을 날짜별 캘린더에 남겨요.</p></div>
     <div class="dashboard-grid">
-      <div class="panel timer-view">
+      <div class="panel timer-view owner-only">
         <div class="row" style="justify-content:center"><label class="field" style="min-width:200px;text-align:left">타이머 종류<select id="timerKind"><option value="피아노 연습">피아노 연습</option><option value="순공">순공</option></select></label></div>
         <p class="timer-mode" id="timerState">준비됨</p><div class="timer-clock" id="timerDisplay" role="timer" aria-live="off">00:00:00</div>
         <div class="timer-actions"><button class="btn primary" id="timerStart">시작</button><button class="btn" id="timerPause" disabled>일시정지</button><button class="btn" id="timerFinish" disabled>종료하고 기록</button></div>
@@ -78,10 +78,10 @@
 
   <section class="section" id="watch" data-section="watch">
     <div class="section-heading"><div><div class="section-label">04 / 감상 기록</div><h2>영화·드라마 감상 기록</h2></div><p>날짜와 감상을 기록하고 항목마다 원하는 공개 등급을 지정할 수 있습니다.</p></div>
-    <div class="row spread" style="margin-bottom:15px"><label class="field" style="min-width:200px">제목 검색<input id="watchSearch" placeholder="작품 제목 검색"></label><button class="btn primary" id="watchAddToggle">+ 감상 기록 추가</button></div>
+    <div class="row spread" style="margin-bottom:15px"><label class="field" style="min-width:200px">제목 검색<input id="watchSearch" placeholder="작품 제목 검색"></label><button class="btn primary owner-only" id="watchAddToggle">+ 감상 기록 추가</button></div>
     <div id="watchList" class="cards-grid"></div>
     <p class="section-note" id="tmdbAttribution" hidden>이 사이트는 TMDB API를 사용하지만 TMDB의 보증이나 인증을 받지 않았습니다. <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">TMDB 정보 ↗</a></p>
-    <form id="watchForm" class="form-box" hidden>
+    <form id="watchForm" class="form-box owner-only" hidden>
       <h3 id="watchFormTitle">감상 기록 추가</h3><div class="fields">
         <label class="field">작품 제목<input id="watchTitle" required maxlength="120" placeholder="영화 또는 드라마 제목"></label>
         <label class="field">분류<select id="watchKind"><option>영화</option><option>드라마</option></select></label>
@@ -97,9 +97,9 @@
   <section class="collections section" id="collections" data-section="collections">
     <div class="section-heading"><div><div class="section-label">05 / 나의 아카이브</div><h2>아카이브</h2></div><p>사진·책·장소·프로젝트·음악·유튜브·개인 위키·타임라인을 항목별로 관리할 수 있어요.</p></div>
     <div class="category-bar" id="categoryBar"></div>
-    <div class="row spread" style="margin-bottom:15px"><label class="field" style="min-width:220px">아카이브 검색<input id="entrySearch" placeholder="제목이나 메모 검색"></label><button class="btn primary" id="entryAddToggle">+ 항목 추가</button></div>
+    <div class="row spread" style="margin-bottom:15px"><label class="field" style="min-width:220px">아카이브 검색<input id="entrySearch" placeholder="제목이나 메모 검색"></label><button class="btn primary owner-only" id="entryAddToggle">+ 항목 추가</button></div>
     <div id="entriesList" class="cards-grid"></div>
-    <form id="entryForm" class="form-box" hidden>
+    <form id="entryForm" class="form-box owner-only" hidden>
       <h3 id="entryFormTitle">아카이브 항목 추가</h3><div class="fields">
         <label class="field">분류<select id="entryKind"></select></label>
         <label class="field">제목<input id="entryTitle" required maxlength="120" placeholder="기록 제목"></label>
@@ -111,31 +111,19 @@
     </form>
   </section>
 
-  <section class="section" id="location" data-section="location">
-    <div class="section-heading"><div><div class="section-label">06 / 위치 공유</div><h2>위치 공유</h2></div><p>공개 등급 설정 및 공유 켜기/끄기 기능을 위한 자리입니다. 실제 위치 수집은 아직 비활성화되어 있습니다.</p></div>
-    <div class="location-panel">
-      <div class="map-blank"><span class="location-badge">◉ 위치 공유 꺼짐</span></div>
-      <div class="panel"><h3>위치는 기본 비공개</h3><p>추후 로그인·등급 인증·서버 저장이 완성되면, 원하는 등급에만 스마트폰 위치를 표시할 수 있도록 연결할 예정입니다.</p>
-        <p class="muted">공개 등급: <strong id="locationAudience">4등급 이상</strong></p>
-        <label class="row" style="margin-top:16px"><input type="checkbox" id="locationSwitch" disabled> <span>위치 공유 켜기</span></label>
-        <p class="section-note">보안을 위해 현재는 켤 수 없습니다. 위치 좌표를 요청하거나 저장하지 않습니다.</p>
-      </div>
-    </div>
-  </section>
-
   <section class="community section" id="community" data-section="community">
     <div class="community-main"><div class="section-label">07 / 소통</div><p class="eyebrow" style="margin-top:30px">가까운 사람과 함께</p><h2>커뮤니티</h2><p class="body-copy">방명록, 질문과 답변, 댓글, 개인 메시지, 커피챗 등의 기능을 순차적으로 연결합니다.</p></div>
-    <div class="access-panel"><div class="access-head"><span>회원 등급</span><span>미리보기</span></div><div id="gradePreview"></div><p class="access-note">현재는 등급 이름을 수정하고 추가해 보는 체험 기능만 지원합니다. 실제 회원가입·초대·승급·차단은 아직 연결되지 않았습니다.</p></div>
+    <div class="access-panel"><div class="access-head"><span>회원 등급</span><span>미리보기</span></div><div id="gradePreview"></div><p class="access-note">등급별 열람과 관리자 편집은 서버 인증을 연결한 후 적용됩니다.</p></div>
   </section>
 
   <section class="section" id="contact" data-section="contact">
-    <div class="section-heading"><div><div class="section-label">08 / 연결</div><h2>소셜미디어·연락처</h2></div><p>소셜미디어와 연락 수단을 추가할 수 있어요. 처음에는 아무것도 공개되지 않습니다.</p></div>
+    <div class="section-heading"><div><div class="section-label">08 / 연결</div><h2>소셜미디어·연락처</h2></div><p>공개된 소셜미디어와 연락 수단을 확인할 수 있습니다.</p></div>
     <div class="contact-pane"><div class="social-grid" id="socialButtons"></div><div id="contactButtons" class="social-grid"></div></div>
-    <p class="section-note">링크 및 연락처는 아래 설정에서 입력합니다. 지금은 이 브라우저에서만 보이므로 실제 공개용 연락처를 등록하지 마세요.</p>
+    <p class="section-note">소셜미디어와 연락처 변경은 관리자 로그인 후 할 수 있습니다.</p>
   </section>
 
   <section class="section" id="settings">
-    <div class="section-heading"><div><div class="section-label">09 / 사이트 설정 — 로컬 체험</div><h2>사이트 설정</h2></div><p>여기서 바꾼 설정은 현재 브라우저에만 적용됩니다. 등급 제한을 실제로 보호하려면 회원 인증과 서버 권한 검사가 필요해요.</p></div>
+    <div class="section-heading"><div><div class="section-label">관리자 · 계정</div><h2>사이트 설정</h2></div><p>관리자 로그인 후 사이트 설정과 게시물을 편집할 수 있습니다.</p></div>
     <div class="setting-grid">
       <div class="setting-block" id="cloudAccountPanel"><h3>회원 로그인 · 서버 연결</h3>
         <p class="muted" id="cloudStatus">서버 연결 정보를 확인하고 있습니다.</p>
@@ -150,22 +138,22 @@
           <button id="cloudPublish" type="button" class="btn primary">현재 기록 서버에 게시</button>
         </div>
         <button id="cloudViewerRefresh" type="button" class="btn" hidden>서버 내용 새로고침</button>
+        <button id="restoreLocalDraft" type="button" class="btn" hidden>이전 로컬 기록 복구</button>
         <button id="cloudLogout" type="button" class="btn" hidden>로그아웃</button>
         <p class="section-note">서버 연결 전에는 로컬 체험판입니다. 로그인 계정은 Supabase에서 별도 생성해야 합니다.</p>
       </div>
-      <div class="setting-block"><h3>첫 화면 대표 사진</h3><p class="muted">사진을 올리거나 이미지 URL을 입력할 수 있습니다. 아직은 이 브라우저에만 저장됩니다.</p>
+      <div class="setting-block owner-only"><h3>첫 화면 대표 사진</h3><p class="muted">사진을 올리거나 이미지 URL을 입력할 수 있습니다. 아직은 이 브라우저에만 저장됩니다.</p>
         <label class="field">컴퓨터·휴대폰에서 사진 선택<input type="file" id="heroImageFile" accept="image/jpeg,image/png,image/webp,image/avif"></label>
         <label class="field" style="margin-top:12px">이미지 주소로 설정<input type="url" id="heroImageUrl" placeholder="https://..."></label>
         <div class="row" style="margin-top:13px"><button class="btn primary" type="button" id="heroUrlSave">대표 사진 적용</button><button class="btn" type="button" id="heroImageClear">사진 제거</button></div><p class="section-note" id="heroImageStatus">사진은 브라우저에 저장됩니다.</p>
       </div>
-      <div class="setting-block"><h3>등급 이름과 단계</h3><p class="muted">등급은 숫자가 클수록 접근 가능한 범위가 넓어집니다.</p><div id="levelEditor"></div><div class="row" style="margin-top:16px"><button class="btn small" id="addLevel">+ 등급 추가</button></div></div>
-      <div class="setting-block"><h3>페이지별 공개 범위</h3><p class="muted">선택한 등급 이상에게 보이도록 설정하는 화면 예시입니다.</p><div id="sectionEditor"></div><p class="section-note">현재는 실제 보안 설정이 아닌 미리보기입니다.</p></div>
-      <div class="setting-block"><h3>활동 상태 설정</h3><label class="field">상태 공개 등급<select id="statusLevel" class="level-options"></select></label><h4>선택할 수 있는 상태</h4><div id="statusOptionsEditor"></div><form id="newStatusForm" class="row" style="margin-top:14px"><input id="newStatusInput" class="input" style="flex:1;min-width:130px" maxlength="35" placeholder="예: 도서관에서 공부 중" required><button class="btn small" type="submit">추가</button></form></div>
-      <div class="setting-block"><h3>연습 시간 공개 설정</h3><label class="field">연습 기록 공개 등급<select id="practiceLevel" class="level-options"></select></label><p class="muted">캘린더와 총 연습 시간의 공개 범위를 지정합니다.</p><h4>미리보기 등급</h4><label class="field">방문자 등급으로 미리 보기<select id="previewLevel" class="level-options"></select></label><p class="section-note">체험용 보기 전환이며 로그인이나 실제 보안과 무관합니다.</p></div>
-      <div class="setting-block"><h3>소셜미디어 링크</h3><form id="socialForm" class="stack"><label class="field">인스타그램 주소<input id="socialInstagram" type="url" placeholder="https://www.instagram.com/..."></label><label class="field">유튜브 채널 주소<input id="socialYoutube" type="url" placeholder="https://www.youtube.com/..."></label><label class="field">네이버 블로그 주소<input id="socialBlog" type="url" placeholder="https://blog.naver.com/..."></label><button class="btn primary" type="submit">링크 저장</button></form></div>
-      <div class="setting-block"><h3>연락처 버튼</h3><p class="muted">전화·문자·이메일 버튼의 목적지를 지정합니다. 공용 화면에서는 실제 값을 노출하기 전 공개 범위를 반드시 확인해야 합니다.</p><form id="contactForm" class="stack"><label class="field">전화 및 문자 번호<input id="contactPhone" type="tel" autocomplete="off" placeholder="설정하지 않으면 버튼이 숨겨집니다"></label><label class="field">이메일 주소<input id="contactEmail" type="email" autocomplete="off" placeholder="설정하지 않으면 버튼이 숨겨집니다"></label><label class="field">연락처 공개 등급<select id="contactLevel" class="level-options"></select></label><button type="submit" class="btn primary">연락처 저장</button></form></div>
-      <div class="setting-block"><h3>위치 공개 등급</h3><label class="field">위치 공유가 나중에 활성화될 때 적용할 등급<select id="locationLevel" class="level-options"></select></label><p class="section-note">위치는 보안상 2등급 이상의 회원에게만 공개할 수 있도록 설계할 예정입니다.</p></div>
-      <div class="setting-block"><h3>기록 백업</h3><p class="muted">기록은 브라우저에만 저장되어 삭제되거나 기기를 바꾸면 없어질 수 있습니다. JSON 파일로 백업하거나 복원할 수 있습니다.</p><div class="backup-actions"><button id="exportData" class="btn small">내 기록 백업</button><label class="btn small" for="importData" style="cursor:pointer">백업 불러오기</label><input id="importData" type="file" accept=".json,application/json" hidden></div><p class="section-note">백업에는 입력한 연락처 등도 포함되므로 파일 보관에 주의하세요.</p></div>
+      <div class="setting-block owner-only"><h3>등급 이름과 단계</h3><p class="muted">등급은 숫자가 클수록 접근 가능한 범위가 넓어집니다.</p><div id="levelEditor"></div><div class="row" style="margin-top:16px"><button class="btn small" id="addLevel">+ 등급 추가</button></div></div>
+      <div class="setting-block owner-only"><h3>페이지별 공개 범위</h3><p class="muted">선택한 등급 이상에게 보이도록 설정하는 화면 예시입니다.</p><div id="sectionEditor"></div><p class="section-note">현재는 실제 보안 설정이 아닌 미리보기입니다.</p></div>
+      <div class="setting-block owner-only"><h3>활동 상태 설정</h3><label class="field">상태 공개 등급<select id="statusLevel" class="level-options"></select></label><h4>선택할 수 있는 상태</h4><div id="statusOptionsEditor"></div><form id="newStatusForm" class="row" style="margin-top:14px"><input id="newStatusInput" class="input" style="flex:1;min-width:130px" maxlength="35" placeholder="예: 도서관에서 공부 중" required><button class="btn small" type="submit">추가</button></form></div>
+      <div class="setting-block owner-only"><h3>연습 시간 공개 설정</h3><label class="field">연습 기록 공개 등급<select id="practiceLevel" class="level-options"></select></label><p class="muted">캘린더와 총 연습 시간의 공개 범위를 지정합니다.</p><h4>미리보기 등급</h4><label class="field">방문자 등급으로 미리 보기<select id="previewLevel" class="level-options"></select></label><p class="section-note">체험용 보기 전환이며 로그인이나 실제 보안과 무관합니다.</p></div>
+      <div class="setting-block owner-only"><h3>소셜미디어 링크</h3><form id="socialForm" class="stack"><label class="field">인스타그램 주소<input id="socialInstagram" type="url" placeholder="https://www.instagram.com/..."></label><label class="field">유튜브 채널 주소<input id="socialYoutube" type="url" placeholder="https://www.youtube.com/..."></label><label class="field">네이버 블로그 주소<input id="socialBlog" type="url" placeholder="https://blog.naver.com/..."></label><button class="btn primary" type="submit">링크 저장</button></form></div>
+      <div class="setting-block owner-only"><h3>연락처 버튼</h3><p class="muted">전화·문자·이메일 버튼의 목적지를 지정합니다. 공용 화면에서는 실제 값을 노출하기 전 공개 범위를 반드시 확인해야 합니다.</p><form id="contactForm" class="stack"><label class="field">전화 및 문자 번호<input id="contactPhone" type="tel" autocomplete="off" placeholder="설정하지 않으면 버튼이 숨겨집니다"></label><label class="field">이메일 주소<input id="contactEmail" type="email" autocomplete="off" placeholder="설정하지 않으면 버튼이 숨겨집니다"></label><label class="field">연락처 공개 등급<select id="contactLevel" class="level-options"></select></label><button type="submit" class="btn primary">연락처 저장</button></form></div>
+      <div class="setting-block owner-only"><h3>기록 백업</h3><p class="muted">기록은 브라우저에만 저장되어 삭제되거나 기기를 바꾸면 없어질 수 있습니다. JSON 파일로 백업하거나 복원할 수 있습니다.</p><div class="backup-actions"><button id="exportData" class="btn small">내 기록 백업</button><label class="btn small" for="importData" style="cursor:pointer">백업 불러오기</label><input id="importData" type="file" accept=".json,application/json" hidden></div><p class="section-note">백업에는 입력한 연락처 등도 포함되므로 파일 보관에 주의하세요.</p></div>
     </div>
   </section>
 
