@@ -165,6 +165,7 @@ $("cloudLoginForm").addEventListener("submit",async e=>{
   if(error)throw error;$("cloudPassword").value="";await who();
   status(admin?"관리자 로그인 성공 · 저장 시 서버 자동 반영됩니다.":"회원 로그인 성공 · 등급에 맞는 서버 기록을 불러오는 중입니다.");
   if(!admin)await loadCloud({force:true});
+  else if(!window.SIA_AUTOSAVE?.hasPending())await loadCloud({force:false});
  }catch(err){status("로그인 실패: "+String(err.message||err));}
  finally{btn.disabled=false;}
 });
@@ -205,6 +206,10 @@ window.SIA_TMDB_SEARCH=async(title,kind)=>{
  return Array.isArray(data?.results)?data.results:[];
 };
 (async()=>{
- try{await who();if(!admin)await loadCloud({force:true});}catch(err){status("서버 연결 오류: "+String(err.message||err));}
+ try{
+  await who();
+  if(!admin)await loadCloud({force:true});
+  else if(!window.SIA_AUTOSAVE?.hasPending())await loadCloud({force:false});
+ }catch(err){status("서버 연결 오류: "+String(err.message||err));}
 })();
 })();
