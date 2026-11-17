@@ -13,7 +13,8 @@ async function query(q){const {data,error}=await q;if(error)throw error;return d
 const rows=table=>query(client.from(table).select("*").limit(5000));
 function view(){
  $("cloudLoginForm").hidden=!!user;$("cloudLogout").hidden=!user;$("cloudAdminTools").hidden=!admin;
- $("cloudPublish").disabled=!adminLoaded;
+ $("cloudPublish").disabled=!admin;
+ $("cloudViewerRefresh").hidden=false;
  if(user)status((admin?"관리자":"회원")+" 로그인: "+user.email+" · "+memberLevel+"등급"+(admin?" · 서버 게시 가능":" · 열람 전용"));
  else status("서버 연결됨 · 방문자 (1등급). 관리자가 허용한 자료만 표시됩니다.");
 }
@@ -83,7 +84,19 @@ async function replaceRows(table,keyField,items){
 }
 async function pushCloud(){
  if(!admin||loading)return;
- if(!adminLoaded){status("서버 기록을 먼저 불러와 권한이 있는 모든 자료를 확인한 후 게시하세요. 기존 비공개 자료의 손실을 막기 위한 제한입니다.");return;}
+ if(!adminLoaded){
+  const [existingItems,existingSessions,existingContacts,existingBrand]=await Promise.all([
+   query(client.from("content_items").select("id").limit(1)),
+   query(client.from("practice_sessions").select("id").limit(1)),
+   query(client.from("contact_methods").select("kind").limit(1)),
+   query(client.from("site_branding").select("hero_image_url").eq("id",1).maybeSingle())
+  ]);
+  if(existingItems.length||existingSessions.length||existingContacts.length||existingBrand?.hero_image_url){
+   status("서버에 기존 자료가 있습니다. 모든 비공개 자료를 먼저 불러온 뒤 게시해야 합니다.");
+   return;
+  }
+  adminLoaded=true;
+ }
  if(!confirm("이 브라우저의 등급·공개 범위·기록을 서버에 게시합니다. 서버의 기존 기록 중 여기 없는 항목은 삭제됩니다. 먼저 JSON 백업을 권장합니다. 계속할까요?"))return;
  loading=true;loadingButton("cloudPublish",true);status("서버에 게시 중입니다.");
  try{
@@ -137,6 +150,7 @@ $("cloudLogout").addEventListener("click",async()=>{
  if(!confirm("로그아웃하면 이 브라우저의 기록을 서버의 공개 자료로 바꿉니다. 저장하지 않은 로컬 기록이 있다면 먼저 백업하세요. 계속할까요?"))return;
  await client.auth.signOut();user=null;admin=false;memberLevel=1;view();await loadCloud({force:true});
 });
+$("cloudViewerRefresh").onclick=async()=>{if(!confirm("현재 브라우저 기록을 서버에서 불러온 내용으로 바꾸고 싶나요? 로컬 기록은 먼저 JSON 백업하세요."))return;await loadCloud({force:true});};
 $("cloudLoad").onclick=async()=>{if(!confirm("현재 브라우저 데이터를 서버 내용으로 바꿉니다. 저장하지 않은 기록이 있으면 JSON 백업 후 진행하세요. 계속할까요?"))return;await loadCloud({force:true});};
 $("cloudPublish").onclick=pushCloud;
 window.SIA_TMDB_SEARCH=async(title,kind)=>{
