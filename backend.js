@@ -33,6 +33,7 @@ function view(){
  document.dispatchEvent(new Event("sia:auth"));
 }
 async function who(){
+ window.SIA_MENU_READY=false;
  document.documentElement.classList.remove("sia-public-loaded");
  const {data,error}=await client.auth.getUser();user=error?null:data.user;
  adminLoaded=false;
@@ -44,10 +45,11 @@ async function who(){
  view();
 }
 function reconcileVisibility(visibility){
- document.querySelectorAll("[data-section]").forEach(section=>{
-  const required=visibility[section.dataset.section]||1;
-  section.hidden=!admin&&memberLevel<required;
- });
+ // The route controller displays either the selected menu or an explicit access-denied message.
+ // Database RLS is the actual content boundary; the frontend does not reveal denied records.
+ window.SIA_MENU_RULES={...visibility};
+ window.SIA_MENU_READY=true;
+ document.dispatchEvent(new CustomEvent("sia:menu-rules",{detail:{visibility:window.SIA_MENU_RULES}}));
 }
 async function loadCloud({force=false}={}){
  if(loading)return;loading=true;status("서버 자료를 불러오는 중입니다.");
@@ -88,7 +90,7 @@ async function loadCloud({force=false}={}){
   document.documentElement.classList.remove("cloud-authorizing");
   if(admin)adminLoaded=true;
   view();status((admin?"관리자":"방문자")+" · 서버 기록을 불러왔습니다. "+(admin?"변경 후 '서버에 게시'를 눌러야 반영됩니다.":"")); 
- }catch(err){status("서버 불러오기 실패: "+String(err.message||err));}
+ }catch(err){status("서버 불러오기 실패: "+String(err.message||err));document.dispatchEvent(new Event("sia:menu-error"));}
  finally{loading=false;}
 }
 async function upsert(table,items){
@@ -122,7 +124,7 @@ async function pushCloud(){
   const s=window.SIA_BRIDGE.snapshot();
   const levels=s.levels.slice(0,10).map((name,i)=>({level_number:i+1,name}));
   await replaceRows("member_levels","level_number",levels);
-  await upsert("page_visibility",Object.entries(s.sectionLevels).map(([slug,min_level])=>({slug,min_level:Number(min_level)})));
+  await upsert("page_visibility",Object.entries(s.sectionLevels).filter(([slug])=>!["about","collections","location"].includes(slug)).map(([slug,min_level])=>({slug,min_level:Number(min_level)})));
   const contacts=[...(s.contact.phone?[{kind:"phone",destination:s.contact.phone,min_level:s.contactLevel}]:[]),...(s.contact.email?[{kind:"email",destination:s.contact.email,min_level:s.contactLevel}]:[]),...Object.entries(s.social).filter(([,v])=>Boolean(v)).map(([kind,destination])=>({kind,destination,min_level:s.contactLevel}))];
   await replaceRows("contact_methods","kind",contacts);
   let heroImageUrl=localStorage.getItem("sia-space-hero-photo-v1")||"";
@@ -151,7 +153,8 @@ async function pushCloud(){
    min_level:Number(s.practiceLevel||1),created_at:new Date(x.created||Date.now()).toISOString()
   }));
   await replaceRows("practice_sessions","id",sessions);
-  status("서버 게시를 완료했습니다. 등급별 접근 제한은 데이터베이스 정책이 적용합니다.");
+  reconcileVisibility(s.sectionLevels);
+  status("서버 게시를 완료했습니다. 메뉴별 공개 등급과 게시물 접근 제한이 데이터베이스에 적용됐습니다.");
  }catch(err){status("서버 게시 실패: "+String(err.message||err)+" · 일부 자료만 게시되었을 수 있습니다.");}
  finally{loading=false;loadingButton("cloudPublish",false);}
 }
