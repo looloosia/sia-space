@@ -20,15 +20,15 @@
 - 소셜미디어 링크와 전화·문자·이메일 버튼
 - JSON 로컬 데이터 백업·복원
 
-**주의:** 별도 서버가 아직 연결되지 않은 기본 배포에서는 위 변경 내용이 해당 브라우저의 `localStorage`에만 저장됩니다. 사용자 인증/권한/서버 공유가 실제 활성화되었다는 뜻이 아닙니다. 다른 방문자나 다른 기기에는 로컬 변경이 나타나지 않습니다.
+**현재 상태:** Supabase 서울 프로젝트가 생성되어 있고 데이터베이스 RLS와 홈페이지 연결 정보가 반영됐습니다. 단, 관리자 계정 승격 및 Auth 사이트 URL 설정은 아직 완료되지 않았습니다. 새 로컬 기록은 관리자가 서버 게시 버튼을 눌러야 다른 방문자에게 보입니다.
 
-## 다음 단계: Supabase 백엔드 연결 (미설정)
+## Supabase 연결 상태 및 남은 관리자 설정
 
-저장소에 인증·데이터베이스·등급별 조회 정책(RLS)·관리자 게시 코드가 준비되어 있으나, **Supabase 프로젝트는 아직 만들어지거나 연결되지 않았습니다.** 아래 절차는 사용자가 자신의 프로젝트에서 직접 실행해야 합니다.
+**프로젝트:** https://supabase.com/dashboard/project/gjydiqwtwmzwtdnqiytu (ap-northeast-2, 서울). 기본 테이블 8개와 RLS 생성 완료, 공개용 publishable key로 GitHub Pages 연결 완료. 아래는 아직 필요한 **사용자 조작**입니다.
 
-1. [Supabase](https://supabase.com/dashboard)에서 새 프로젝트를 만듭니다. Supabase 계정과 프로젝트를 사용자 본인이 소유해야 합니다.
-2. 프로젝트의 **SQL Editor**에서 `supabase/schema.sql` 내용을 최초 1회 실행합니다. 이 스크립트는 RLS 정책과 공개용 대표사진 버킷을 생성합니다. **이미 운영 중인 DB에서는 덮어쓰기 전에 별도로 검토하세요.**
-3. **Authentication**에서 이메일·비밀번호 회원가입과 이메일 인증을 활성화합니다. 이 사이트는 가입 신청을 받되 **관리자가 승인하기 전에는 방문자 권한(1등급)** 으로만 접근하는 구조입니다. 이메일 인증에 사용하는 **Site URL**은 `https://looloosia.github.io/sia-space/`로 설정하고 이 주소를 Redirect URLs에도 추가합니다.
+1. **완료:** 프로젝트 생성 및 `supabase/schema.sql` 스키마 실행. 인증 검사에서 익명 방문자는 1등급, 관리자 권한 없음으로 확인됐습니다.
+2. **완료:** 보안 경고를 없애기 위해 RLS helper 함수를 `app_private` 스키마로 이동했고 Supabase 보안 조언 결과 경고 0개로 확인됐습니다.
+3. **남은 조작:** [Authentication URL 설정](https://supabase.com/dashboard/project/gjydiqwtwmzwtdnqiytu/auth/url-configuration)에서 **Site URL**과 **Redirect URL**을 `https://looloosia.github.io/sia-space/`로 설정하세요. [Auth Providers](https://supabase.com/dashboard/project/gjydiqwtwmzwtdnqiytu/auth/providers)에서 이메일 인증 활성화 상태도 확인하세요.
 4. Supabase **Authentication > Users**에서 본인 관리자 계정을 만든 뒤 **실제 UUID**를 확인합니다. SQL Editor에서 아래 문장을 **UUID만 바꿔** 실행하여 관리자 권한을 지정합니다.
 
    ```sql
@@ -39,16 +39,7 @@
 
    SQL 스키마 실행 전에 만들어진 기존 계정이라면 `member_profiles` 행이 없을 수 있으니 해당 계정을 스키마 실행 후 새로 생성하거나 행을 안전하게 삽입해야 합니다. **타인에게 관리자 권한을 부여하지 마세요.**
 
-5. **Project Settings**에서 Project URL과 **publishable key**만 확인하고 `site-config.js`를 아래처럼 변경합니다.
-
-   ```js
-   window.SIA_CONFIG = Object.freeze({
-     supabaseUrl: "https://내-프로젝트.supabase.co",
-     supabasePublishableKey: "sb_publishable_..."
-   });
-   ```
-
-   publishable key는 공개 클라이언트용이며 보안은 DB RLS에서 담당합니다. **secret key, service_role key, TMDB 토큰, 계정 비밀번호는 절대 GitHub 파일에 저장하면 안 됩니다.**
+5. **완료:** `site-config.js`에 Supabase URL과 공개 가능한 publishable key 적용. GitHub에는 secret key, service_role key, SMTP 비밀번호, TMDB 비밀 토큰을 올리지 마세요.
 
 6. GitHub Pages가 반영된 후 SIA SPACE **설정 > 회원 로그인**에서 관리자 계정으로 로그인합니다. 최초 게시 시에는 기존 로컬 데이터를 JSON으로 백업하고 "현재 기록 서버에 게시"를 사용합니다. 서버에 기존 자료가 있다면 먼저 "서버 기록 불러오기"로 모든 등급의 기록을 가져온 뒤 수정해서 게시합니다.
 
@@ -84,13 +75,13 @@
 
 ## 편집 권한 및 로그인 화면
 
-현재 배포의 `site-config.js`에는 Supabase 연결 값이 비어 있습니다. 따라서 **현재 공개된 홈페이지에는 본인 식별 기능이 없으며, 편집 버튼은 방문자에게 표시하지 않습니다.** 서버 연결 후 방문자는 읽기 전용이고, Supabase Auth로 인증한 사용자의 `member_profiles.is_admin` 값이 `true`일 때만 수정 버튼과 설정 UI가 표시됩니다.
+현재 `site-config.js`에 Supabase URL과 공개 키가 설정돼 있습니다. 관리자 로그인 전에는 편집 버튼이 숨겨지고, Supabase Auth로 로그인한 사용자의 `member_profiles.is_admin`이 `true`일 때만 수정 버튼과 설정 UI가 표시됩니다.
 
 **서버에서 누가 관리자인지 아는 방법:** 사용자가 이메일과 비밀번호로 Supabase Auth에 로그인 → 서버가 인증한 사용자 UUID를 확인 → `member_profiles` 테이블에서 해당 UUID의 `is_admin` 확인. 이 UI 숨김과 별도로 콘텐츠 변경은 RLS 정책에 의해 DB 차원에서 관리자만 허용됩니다.
 
 서버 연결 이전에 저장된 로컬 기록이 있는 브라우저라면 최초 연결 시 `sia-space-local-precloud-backup-v2`에 자동 보관하고 공개 화면에서 숨깁니다. 이후 관리자로 로그인하면 **이전 로컬 기록 복구** 버튼을 사용해 확인할 수 있습니다. 서버 게시를 누르기 전에는 방문자에게 반영되지 않습니다.
 
-위치 기능은 일체 사용하지 않으며 GPS 권한도 요청하지 않습니다. 이전 DB에 위치 데이터가 이미 있었다면 `supabase/migrations/20261117_remove_location.sql`을 SQL Editor에서 실행해 `live_location` 테이블 자체를 삭제하세요. 현재는 아직 Supabase 프로젝트와 연결되지 않았으므로 데이터 삭제 SQL을 자동 실행하지는 않았습니다.
+위치 기능은 일체 사용하지 않으며 GPS 권한도 요청하지 않습니다. 이전 DB에 위치 데이터가 이미 있었다면 `supabase/migrations/20261117_remove_location.sql`을 SQL Editor에서 실행해 `live_location` 테이블 자체를 삭제하세요. 신규 프로젝트에는 위치 공유 테이블을 생성하지 않았습니다.
 
 
 ## 회원가입·승인 흐름 (서버 연결 필요)
@@ -104,4 +95,4 @@
 
 관리자가 최초 지정된 계정이 아니라면 일반 회원은 스스로 `is_admin` 또는 `is_approved`를 변경할 수 없습니다. 관리자의 승인 권한은 Supabase Auth 사용자 UUID와 서버의 `member_profiles.is_admin`에 의해 판별됩니다.
 
-**현재 Supabase 연결 상태:** ChatGPT의 Supabase 앱은 연결되었지만, 확인 시 해당 계정에 프로젝트가 없었습니다. 따라서 GitHub의 프런트엔드 코드와 SQL 스키마만 추가된 상태이고 **사이트에서 실제 회원가입은 아직 불가능**합니다. Supabase 프로젝트 생성 및 스키마 적용·사이트 공개 연결 정보를 설정해야 활성화됩니다.
+**현재 Supabase 연결 상태:** 프로젝트·DB·홈페이지 공개 키 연결 완료. Auth 리디렉션 주소와 최초 관리자 계정 지정이 아직 남았습니다. 외부 일반 회원에게 인증 이메일을 보내려면 [Supabase Auth의 사용자 지정 SMTP](https://supabase.com/dashboard/project/gjydiqwtwmzwtdnqiytu/auth/smtp)를 연결해야 합니다. Supabase 기본 발송 서비스는 프로젝트 팀에 속한 이메일 주소로 제한되므로, 외부 회원의 가입은 아직 운영 준비가 끝나지 않았습니다.
