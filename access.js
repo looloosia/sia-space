@@ -3,9 +3,9 @@
 
 const $ = id => document.getElementById(id);
 const ROUTES = {
- home:"홈",now:"현재 상태",practice:"연습 기록",watch:"영화·드라마",
+ home:"홈",now:"현재 상태",practice:"시간기록",watch:"영화·드라마",
  photos:"사진",books:"책",places:"장소",projects:"프로젝트",music:"음악",
- youtube:"유튜브",wiki:"개인 위키",timeline:"타임라인",
+ youtube:"유튜브",wiki:"개인 기록",timeline:"타임라인",
  community:"소통",contact:"연락처",settings:"로그인·회원가입",admin:"관리자 설정"
 };
 const ARCHIVES = new Set(["photos","books","places","projects","music","youtube","wiki","timeline"]);
