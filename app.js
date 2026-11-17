@@ -3,21 +3,21 @@
 const $=id=>document.getElementById(id),make=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=String(txt);return e;};
 const types=["사진","책","장소","프로젝트","음악","유튜브","개인 위키","타임라인"];
 const archiveMap={"사진":"photos","책":"books","장소":"places","프로젝트":"projects","음악":"music","유튜브":"youtube","개인 위키":"wiki","타임라인":"timeline"};
-const sections={home:"홈",now:"현재 상태",practice:"시간기록",watch:"영화·드라마",photos:"사진",books:"책",places:"장소",projects:"프로젝트",music:"음악",youtube:"유튜브",wiki:"개인 기록",timeline:"타임라인",community:"소통",contact:"연락처"};
-const defaults=()=>({version:2,levels:["일반 방문자","일반 회원","친구","특별 회원"],sectionLevels:{home:1,now:1,practice:1,watch:1,photos:1,books:1,places:1,projects:1,music:1,youtube:1,wiki:1,timeline:1,community:1,contact:2},practiceLevel:1,statusLevel:1,contactLevel:2,previewLevel:1,statuses:["쉬는 중","피아노 연습 중","공부 중","수업 중","이동 중","독서 중","외출 중","작업 중","수면 중"],currentStatus:"쉬는 중",statusAt:null,timer:{kind:"피아노 연습",active:false,startedAt:null,elapsedMs:0},sessions:[],watch:[],entries:[],social:{instagram:"",youtube:"",blog:""},contact:{phone:"",email:""}});
+const sections={home:"홈",now:"현재 상태",practice:"시간기록",watch:"영화·드라마",photos:"사진",books:"책",places:"장소",projects:"프로젝트",music:"음악",youtube:"유튜브",wiki:"개인 기록",timeline:"타임라인",community:"소통",contact:"소셜·이메일"};
+const defaults=()=>({version:2,levels:["일반 방문자","일반 회원","친구","특별 회원"],sectionLevels:{home:1,now:1,practice:1,watch:1,photos:1,books:1,places:1,projects:1,music:1,youtube:1,wiki:1,timeline:1,community:1,contact:2},practiceLevel:1,statusLevel:1,contactLevel:2,previewLevel:1,statuses:["쉬는 중","피아노 연습 중","공부 중","수업 중","이동 중","독서 중","외출 중","작업 중","수면 중"],currentStatus:"쉬는 중",statusAt:null,timer:{kind:"피아노 연습",active:false,startedAt:null,elapsedMs:0},sessions:[],watch:[],entries:[],social:{instagram:"",youtube:"",blog:""},contact:{email:""}});
 let state;try{state={...defaults(),...JSON.parse(localStorage.getItem("sia-space-local-v2")||"null")};}catch{state=defaults();}
 if(!Array.isArray(state.levels)||state.levels.length<2)state=defaults();
 state.levels=state.levels.slice(0,10);state.sessions=Array.isArray(state.sessions)?state.sessions:[];state.watch=Array.isArray(state.watch)?state.watch:[];state.entries=Array.isArray(state.entries)?state.entries:[];state.statuses=Array.isArray(state.statuses)&&state.statuses.length?state.statuses:defaults().statuses;
 state.timer=state.timer&&typeof state.timer==="object"?state.timer:defaults().timer;
 if(!state.timer.active||!Number.isFinite(state.timer.startedAt)||state.timer.startedAt>Date.now()){state.timer.active=false;state.timer.startedAt=null;}
-state.social=state.social||defaults().social;state.contact=state.contact||defaults().contact;
+state.social=state.social||defaults().social;state.contact={email:String(state.contact?.email||"")};
 const historicalSections=state.sectionLevels||{};
 state.sectionLevels={...defaults().sectionLevels,...historicalSections};
 if(!Object.hasOwn(historicalSections,"home")&&historicalSections.about)state.sectionLevels.home=historicalSections.about;
 for(const slug of Object.values(archiveMap))if(!Object.hasOwn(historicalSections,slug)&&historicalSections.collections)state.sectionLevels[slug]=historicalSections.collections;
 delete state.locationLevel;
 delete state.sectionLevels.location;
-const save=()=>{delete state.locationLevel;if(state.sectionLevels)delete state.sectionLevels.location;try{localStorage.setItem("sia-space-local-v2",JSON.stringify(state));}catch{toast("저장 공간이 부족합니다.");}};
+const save=()=>{state.contact={email:String(state.contact?.email||"")};delete state.locationLevel;if(state.sectionLevels)delete state.sectionLevels.location;try{localStorage.setItem("sia-space-local-v2",JSON.stringify(state));}catch{toast("저장 공간이 부족합니다.");}};
 const date=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-"),today=()=>date(new Date());
 const time=ms=>{let s=Math.floor(Math.max(0,ms)/1000);return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(x=>String(x).padStart(2,"0")).join(":");};
 const duration=ms=>time(ms);
@@ -48,7 +48,7 @@ function settings(){
   sel.onchange=()=>{state.sectionLevels[key]=Number(sel.value);save();toast("등급 설정을 변경했습니다. 서버에 게시하면 방문자에게 적용됩니다.");};row.append(make("label","",label),sel);$("sectionEditor").append(row);
  });
  $("socialInstagram").value=state.social.instagram||"";$("socialYoutube").value=state.social.youtube||"";$("socialBlog").value=state.social.blog||"";
- $("contactPhone").value=state.contact.phone||"";$("contactEmail").value=state.contact.email||"";
+ $("contactEmail").value=state.contact.email||"";
  renderSocial();renderContact();renderSummary();
 }
 $("addLevel").onclick=()=>{if(state.levels.length>=10)return;state.levels.push("새 등급 "+(state.levels.length+1));save();settings();};
@@ -201,12 +201,11 @@ $("socialForm").onsubmit=e=>{
  state.social=vals;save();renderSocial();toast("소셜 링크를 저장했습니다.");
 };
 function renderContact(){
- const box=$("contactButtons");box.replaceChildren();const number=String(state.contact.phone||"").replace(/[^\d+]/g,"");
- if(/^\+?\d{8,15}$/.test(number)){[["tel","전화 걸기"],["sms","문자 보내기"]].forEach(([scheme,label])=>{const a=make("a","social-link",label+" ↗");a.href=scheme+":"+number;box.append(a);});}
+ const box=$("contactButtons");box.replaceChildren();
  if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.contact.email||"")){const a=make("a","social-link","이메일 보내기 ↗");a.href="mailto:"+state.contact.email;box.append(a);}
- if(!box.children.length)box.append(make("p","muted","아직 공개된 연락처가 없습니다."));
+ if(!box.children.length)box.append(make("p","muted","아직 공개된 이메일 주소가 없습니다."));
 }
-$("contactForm").onsubmit=e=>{e.preventDefault();state.contact={phone:$("contactPhone").value.trim(),email:$("contactEmail").value.trim()};state.contactLevel=Number($("contactLevel").value);save();renderContact();toast("이 브라우저에 연락처를 저장했습니다.");};
+$("contactForm").onsubmit=e=>{e.preventDefault();state.contact={email:$("contactEmail").value.trim()};state.contactLevel=Number($("contactLevel").value);save();renderContact();toast("이메일 공개 설정을 저장했습니다. 서버에 게시하면 방문자에게 적용됩니다.");};
 $("exportData").onclick=()=>{
  const blob=new Blob([JSON.stringify({app:"SIA SPACE",exportedAt:new Date().toISOString(),data:state},null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=make("a");a.href=url;a.download="sia-space-backup-"+today()+".json";document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 };
