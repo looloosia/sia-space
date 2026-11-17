@@ -29,7 +29,7 @@
       </div>
     </details>
     <a href="#community">소통</a>
-    <a href="#contact">연락처</a>
+    <a href="#contact">소셜·이메일</a>
     <a href="#settings" id="settingsNav">로그인·회원가입</a>
     <a href="#admin" class="owner-only" id="adminNav">관리자 설정</a>
   </nav>
@@ -245,9 +245,9 @@
   </section>
 
   <section class="section route-page" id="contact" data-section="contact">
-    <div class="section-heading"><div><div class="section-label">06 / 연결</div><h2>소셜미디어·연락처</h2></div><p>공개된 소셜미디어와 연락 수단을 확인할 수 있습니다.</p></div>
+    <div class="section-heading"><div><div class="section-label">06 / 연결</div><h2>소셜미디어·이메일</h2></div><p>소셜미디어 계정과 공개 이메일을 확인할 수 있습니다. 전화번호는 제공하지 않습니다.</p></div>
     <div class="contact-pane"><div class="social-grid" id="socialButtons"></div><div id="contactButtons" class="social-grid"></div></div>
-    <p class="section-note">소셜미디어와 연락처 변경은 관리자 로그인 후 할 수 있습니다.</p>
+    <p class="section-note">소셜미디어 링크와 이메일 주소는 관리자가 설정한 공개 등급 이상에게만 보입니다.</p>
   </section>
 
   <section class="section route-page" id="settings" data-section="account">
@@ -331,8 +331,8 @@
       <div class="setting-block owner-only"><h3>활동 상태 설정</h3><label class="field">상태 공개 등급<select id="statusLevel" class="level-options"></select></label><h4>선택할 수 있는 상태</h4><div id="statusOptionsEditor"></div><form id="newStatusForm" class="row" style="margin-top:14px"><input id="newStatusInput" class="input" style="flex:1;min-width:130px" maxlength="35" placeholder="예: 도서관에서 공부 중" required><button class="btn small" type="submit">추가</button></form></div>
       <div class="setting-block owner-only"><h3>연습 시간 공개 설정</h3><label class="field">시간기록 공개 등급<select id="practiceLevel" class="level-options"></select></label><p class="muted">캘린더와 총 연습 시간의 공개 범위를 지정합니다.</p><h4>미리보기 등급</h4><label class="field">방문자 등급으로 미리 보기<select id="previewLevel" class="level-options"></select></label><p class="section-note">체험용 보기 전환이며 로그인이나 실제 보안과 무관합니다.</p></div>
       <div class="setting-block owner-only"><h3>소셜미디어 링크</h3><form id="socialForm" class="stack"><label class="field">인스타그램 주소<input id="socialInstagram" type="url" placeholder="https://www.instagram.com/..."></label><label class="field">유튜브 채널 주소<input id="socialYoutube" type="url" placeholder="https://www.youtube.com/..."></label><label class="field">네이버 블로그 주소<input id="socialBlog" type="url" placeholder="https://blog.naver.com/..."></label><button class="btn primary" type="submit">링크 저장</button></form></div>
-      <div class="setting-block owner-only"><h3>연락처 버튼</h3><p class="muted">전화·문자·이메일 버튼의 목적지를 지정합니다. 공용 화면에서는 실제 값을 노출하기 전 공개 범위를 반드시 확인해야 합니다.</p><form id="contactForm" class="stack"><label class="field">전화 및 문자 번호<input id="contactPhone" type="tel" autocomplete="off" placeholder="설정하지 않으면 버튼이 숨겨집니다"></label><label class="field">이메일 주소<input id="contactEmail" type="email" autocomplete="off" placeholder="설정하지 않으면 버튼이 숨겨집니다"></label><label class="field">연락처 공개 등급<select id="contactLevel" class="level-options"></select></label><button type="submit" class="btn primary">연락처 저장</button></form></div>
-      <div class="setting-block owner-only"><h3>기록 백업</h3><p class="muted">기록은 브라우저에만 저장되어 삭제되거나 기기를 바꾸면 없어질 수 있습니다. JSON 파일로 백업하거나 복원할 수 있습니다.</p><div class="backup-actions"><button id="exportData" class="btn small">내 기록 백업</button><label class="btn small" for="importData" style="cursor:pointer">백업 불러오기</label><input id="importData" type="file" accept=".json,application/json" hidden></div><p class="section-note">백업에는 입력한 연락처 등도 포함되므로 파일 보관에 주의하세요.</p></div>
+      <div class="setting-block owner-only"><h3>이메일 공개 설정</h3><p class="muted">사이트에 공개할 이메일 주소만 입력합니다. 전화번호 및 문자 연락 기능은 사용하지 않습니다.</p><form id="contactForm" class="stack"><label class="field">이메일 주소<input id="contactEmail" type="email" autocomplete="off" placeholder="설정하지 않으면 이메일 버튼이 숨겨집니다"></label><label class="field">소셜·이메일 공개 등급<select id="contactLevel" class="level-options"></select></label><button type="submit" class="btn primary">이메일 설정 저장</button></form></div>
+      <div class="setting-block owner-only"><h3>기록 백업</h3><p class="muted">기록은 브라우저에만 저장되어 삭제되거나 기기를 바꾸면 없어질 수 있습니다. JSON 파일로 백업하거나 복원할 수 있습니다.</p><div class="backup-actions"><button id="exportData" class="btn small">내 기록 백업</button><label class="btn small" for="importData" style="cursor:pointer">백업 불러오기</label><input id="importData" type="file" accept=".json,application/json" hidden></div><p class="section-note">백업에는 입력한 이메일 등도 포함되므로 파일 보관에 주의하세요.</p></div>
     </div>
   </section>
 
