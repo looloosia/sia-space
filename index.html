@@ -16,7 +16,23 @@
 <header class="topbar">
   <a class="brand" href="#home" aria-label="SIA SPACE 처음으로">SIA <span>SPACE</span></a>
   <nav class="desktop-nav" aria-label="주 메뉴" id="mainNav">
-    <a href="#home">홈</a><a href="#now">현재 상태</a><a href="#practice">연습 기록</a><a href="#watch">영화·드라마</a><a href="#collections">아카이브</a><a href="#community">소통</a><a href="#settings" id="settingsNav">로그인·회원가입</a>
+    <a href="#home">홈</a>
+    <a href="#now">현재 상태</a>
+    <a href="#practice">연습 기록</a>
+    <a href="#watch">영화·드라마</a>
+    <details class="archive-nav" id="archiveNav">
+      <summary>기록 메뉴</summary>
+      <div class="archive-nav-menu">
+        <a href="#photos">사진</a><a href="#books">책</a>
+        <a href="#places">장소</a><a href="#projects">프로젝트</a>
+        <a href="#music">음악</a><a href="#youtube">유튜브</a>
+        <a href="#wiki">개인 위키</a><a href="#timeline">타임라인</a>
+      </div>
+    </details>
+    <a href="#community">소통</a>
+    <a href="#contact">연락처</a>
+    <a href="#settings" id="settingsNav">로그인·회원가입</a>
+    <a href="#admin" class="owner-only" id="adminNav">관리자 설정</a>
   </nav>
   <div class="top-actions">
     <span class="visitor">현재 보기 <b id="headerLevel">1등급</b></span><span class="view-count-top" id="siteViewCountTop" title="동일 브라우저에서는 하루 한 번 집계합니다">조회수 집계 중</span>
@@ -25,7 +41,7 @@
 </header>
 
 <main>
-  <section class="hero" id="home">
+  <section class="hero route-page" id="home" data-section="home">
     <div class="hero-copy">
       <p class="eyebrow">나의 작은 온라인 공간</p>
       <h1>SIA SPACE</h1>
@@ -94,13 +110,80 @@
     </form>
   </section>
 
-  <section class="collections section" id="collections" data-section="collections">
-    <div class="section-heading"><div><div class="section-label">04 / 나의 아카이브</div><h2>아카이브</h2></div><p>사진·책·장소·프로젝트·음악·유튜브·개인 위키·타임라인의 공개 기록입니다.</p></div>
-    <div class="category-bar" id="categoryBar"></div>
-    <div class="row spread" style="margin-bottom:15px"><label class="field" style="min-width:220px">아카이브 검색<input id="entrySearch" placeholder="제목이나 메모 검색"></label><button class="btn primary owner-only" id="entryAddToggle">+ 항목 추가</button></div>
-    <div id="entriesList" class="cards-grid"></div>
+  <section class="section archive-page route-page" id="photos" data-section="photos">
+    <div class="section-heading"><div><div class="section-label">04 / 기록</div><h2>사진</h2></div><p>사진과 이미지 기록을 분리하여 관리합니다.</p></div>
+    <div class="row spread archive-toolbar">
+      <label class="field">기록 검색<input id="archiveSearch-photos" placeholder="사진 제목이나 메모 검색"></label>
+      <button type="button" class="btn primary owner-only" data-archive-add="photos">+ 사진 추가</button>
+    </div>
+    <div class="cards-grid" id="archiveList-photos"></div>
+  </section>
+
+  <section class="section archive-page route-page" id="books" data-section="books">
+    <div class="section-heading"><div><div class="section-label">05 / 기록</div><h2>책</h2></div><p>읽은 책과 독서 기록을 관리합니다.</p></div>
+    <div class="row spread archive-toolbar">
+      <label class="field">기록 검색<input id="archiveSearch-books" placeholder="책 제목이나 메모 검색"></label>
+      <button type="button" class="btn primary owner-only" data-archive-add="books">+ 책 추가</button>
+    </div>
+    <div class="cards-grid" id="archiveList-books"></div>
+  </section>
+
+  <section class="section archive-page route-page" id="places" data-section="places">
+    <div class="section-heading"><div><div class="section-label">06 / 기록</div><h2>장소</h2></div><p>자주 찾는 장소와 방문 기록을 관리합니다.</p></div>
+    <div class="row spread archive-toolbar">
+      <label class="field">기록 검색<input id="archiveSearch-places" placeholder="장소 제목이나 메모 검색"></label>
+      <button type="button" class="btn primary owner-only" data-archive-add="places">+ 장소 추가</button>
+    </div>
+    <div class="cards-grid" id="archiveList-places"></div>
+  </section>
+
+  <section class="section archive-page route-page" id="projects" data-section="projects">
+    <div class="section-heading"><div><div class="section-label">07 / 기록</div><h2>프로젝트</h2></div><p>개인 프로젝트 및 작업물을 모아둡니다.</p></div>
+    <div class="row spread archive-toolbar">
+      <label class="field">기록 검색<input id="archiveSearch-projects" placeholder="프로젝트 제목이나 메모 검색"></label>
+      <button type="button" class="btn primary owner-only" data-archive-add="projects">+ 프로젝트 추가</button>
+    </div>
+    <div class="cards-grid" id="archiveList-projects"></div>
+  </section>
+
+  <section class="section archive-page route-page" id="music" data-section="music">
+    <div class="section-heading"><div><div class="section-label">08 / 기록</div><h2>음악</h2></div><p>음악과 관련된 기록을 모아둡니다.</p></div>
+    <div class="row spread archive-toolbar">
+      <label class="field">기록 검색<input id="archiveSearch-music" placeholder="음악 제목이나 메모 검색"></label>
+      <button type="button" class="btn primary owner-only" data-archive-add="music">+ 음악 추가</button>
+    </div>
+    <div class="cards-grid" id="archiveList-music"></div>
+  </section>
+
+  <section class="section archive-page route-page" id="youtube" data-section="youtube">
+    <div class="section-heading"><div><div class="section-label">09 / 기록</div><h2>유튜브</h2></div><p>공유하고 싶은 영상을 모아둡니다.</p></div>
+    <div class="row spread archive-toolbar">
+      <label class="field">기록 검색<input id="archiveSearch-youtube" placeholder="유튜브 제목이나 메모 검색"></label>
+      <button type="button" class="btn primary owner-only" data-archive-add="youtube">+ 유튜브 추가</button>
+    </div>
+    <div class="cards-grid" id="archiveList-youtube"></div>
+  </section>
+
+  <section class="section archive-page route-page" id="wiki" data-section="wiki">
+    <div class="section-heading"><div><div class="section-label">10 / 기록</div><h2>개인 위키</h2></div><p>정리해 둔 정보와 지식을 모아둡니다.</p></div>
+    <div class="row spread archive-toolbar">
+      <label class="field">기록 검색<input id="archiveSearch-wiki" placeholder="개인 위키 제목이나 메모 검색"></label>
+      <button type="button" class="btn primary owner-only" data-archive-add="wiki">+ 개인 위키 추가</button>
+    </div>
+    <div class="cards-grid" id="archiveList-wiki"></div>
+  </section>
+
+  <section class="section archive-page route-page" id="timeline" data-section="timeline">
+    <div class="section-heading"><div><div class="section-label">11 / 기록</div><h2>타임라인</h2></div><p>날짜별 활동과 기록을 모아둡니다.</p></div>
+    <div class="row spread archive-toolbar">
+      <label class="field">기록 검색<input id="archiveSearch-timeline" placeholder="타임라인 제목이나 메모 검색"></label>
+      <button type="button" class="btn primary owner-only" data-archive-add="timeline">+ 타임라인 추가</button>
+    </div>
+    <div class="cards-grid" id="archiveList-timeline"></div>
+  </section>
+
     <form id="entryForm" class="form-box owner-only" hidden>
-      <h3 id="entryFormTitle">아카이브 항목 추가</h3><div class="fields">
+      <h3 id="entryFormTitle">기록 추가</h3><div class="fields">
         <label class="field">분류<select id="entryKind"></select></label>
         <label class="field">제목<input id="entryTitle" required maxlength="120" placeholder="기록 제목"></label>
         <label class="field">관련 링크 또는 이미지 주소<input id="entryUrl" type="url" placeholder="https://"></label>
@@ -109,7 +192,6 @@
       </div><div class="row" style="margin-top:15px"><button class="btn primary" type="submit">저장</button><button class="btn" type="button" id="entryCancel">취소</button></div>
       <p class="section-note">사진은 이미지 주소로만 미리보기를 지원합니다. 실제 사진 파일 업로드는 저장소 연결 후 추가됩니다.</p>
     </form>
-  </section>
 
   <section class="community section" id="community" data-section="community">
     <div class="community-main"><div class="section-label">05 / 소통</div><p class="eyebrow" style="margin-top:30px">가까운 사람과 함께</p><h2>커뮤니티</h2><p class="body-copy">방명록, 질문과 답변, 댓글, 개인 메시지, 커피챗 등의 기능을 순차적으로 연결합니다.</p></div>
@@ -122,10 +204,11 @@
     <p class="section-note">소셜미디어와 연락처 변경은 관리자 로그인 후 할 수 있습니다.</p>
   </section>
 
-  <section class="section" id="settings">
-    <div class="section-heading"><div><div class="section-label">관리자 · 계정</div><h2>사이트 설정</h2></div><p>관리자 로그인 후 사이트 설정과 게시물을 편집할 수 있습니다.</p></div>
+  <section class="section route-page" id="settings" data-section="account">
+    <div class="section-heading"><div><div class="section-label">회원 계정</div><h2>로그인 · 회원가입</h2></div><p>로그인하면 회원 등급에 따라 메뉴를 이용할 수 있습니다.</p></div>
     <div class="setting-grid">
       <div class="setting-block" id="cloudAccountPanel"><h3>로그인 · 회원가입</h3>
+        <div id="loginGateNotice" class="access-login-note" hidden role="status"></div>
         <p class="muted" id="cloudStatus">서버 연결 정보를 확인하고 있습니다.</p>
         <div class="auth-progress" id="signupProgress" hidden aria-live="polite">
           <p class="eyebrow">회원가입 진행 상태</p>
@@ -172,6 +255,12 @@
         <button id="cloudLogout" type="button" class="btn" hidden>로그아웃</button>
         <p class="section-note">SIA SPACE용 계정을 새로 만들 수 있습니다. 가입 후에는 이메일 인증과 관리자 승인이 필요합니다.</p>
       </div>
+    </div>
+  </section>
+
+  <section class="section route-page" id="admin" data-section="admin">
+    <div class="section-heading"><div><div class="section-label">사이트 관리</div><h2>관리자 설정</h2></div><p>메뉴별 공개 등급과 콘텐츠를 관리합니다. 변경 후 서버에 게시해야 방문자에게 적용됩니다.</p></div>
+    <div class="setting-grid">
       <div class="setting-block owner-only" id="memberApprovalsPanel">
         <h3>가입 신청 · 회원 등급 관리</h3>
         <p class="muted">이메일 인증을 마친 회원을 확인하고, 승인 또는 등급 조정을 할 수 있습니다. 가입 직후에는 1등급으로 제한됩니다.</p>
@@ -184,12 +273,22 @@
         <div class="row" style="margin-top:13px"><button class="btn primary" type="button" id="heroUrlSave">대표 사진 적용</button><button class="btn" type="button" id="heroImageClear">사진 제거</button></div><p class="section-note" id="heroImageStatus">사진은 브라우저에 저장됩니다.</p>
       </div>
       <div class="setting-block owner-only"><h3>등급 이름과 단계</h3><p class="muted">등급은 숫자가 클수록 접근 가능한 범위가 넓어집니다.</p><div id="levelEditor"></div><div class="row" style="margin-top:16px"><button class="btn small" id="addLevel">+ 등급 추가</button></div></div>
-      <div class="setting-block owner-only"><h3>페이지별 공개 범위</h3><p class="muted">선택한 등급 이상에게 보이도록 설정하는 화면 예시입니다.</p><div id="sectionEditor"></div><p class="section-note">현재는 실제 보안 설정이 아닌 미리보기입니다.</p></div>
+      <div class="setting-block owner-only"><h3>모든 메뉴의 공개 범위</h3><p class="muted">홈, 현재 상태, 연습 기록, 영화·드라마, 사진·책 등 각 메뉴의 최소 조회 등급을 개별 지정합니다. 회원가입·로그인은 항상 접근 가능하고 관리자 설정은 관리자만 이용합니다.</p><div id="sectionEditor"></div><p class="section-note">변경한 등급은 서버에 게시한 뒤 모든 방문자에게 적용됩니다. 항목별 공개 등급도 별도로 적용됩니다.</p></div>
       <div class="setting-block owner-only"><h3>활동 상태 설정</h3><label class="field">상태 공개 등급<select id="statusLevel" class="level-options"></select></label><h4>선택할 수 있는 상태</h4><div id="statusOptionsEditor"></div><form id="newStatusForm" class="row" style="margin-top:14px"><input id="newStatusInput" class="input" style="flex:1;min-width:130px" maxlength="35" placeholder="예: 도서관에서 공부 중" required><button class="btn small" type="submit">추가</button></form></div>
       <div class="setting-block owner-only"><h3>연습 시간 공개 설정</h3><label class="field">연습 기록 공개 등급<select id="practiceLevel" class="level-options"></select></label><p class="muted">캘린더와 총 연습 시간의 공개 범위를 지정합니다.</p><h4>미리보기 등급</h4><label class="field">방문자 등급으로 미리 보기<select id="previewLevel" class="level-options"></select></label><p class="section-note">체험용 보기 전환이며 로그인이나 실제 보안과 무관합니다.</p></div>
       <div class="setting-block owner-only"><h3>소셜미디어 링크</h3><form id="socialForm" class="stack"><label class="field">인스타그램 주소<input id="socialInstagram" type="url" placeholder="https://www.instagram.com/..."></label><label class="field">유튜브 채널 주소<input id="socialYoutube" type="url" placeholder="https://www.youtube.com/..."></label><label class="field">네이버 블로그 주소<input id="socialBlog" type="url" placeholder="https://blog.naver.com/..."></label><button class="btn primary" type="submit">링크 저장</button></form></div>
       <div class="setting-block owner-only"><h3>연락처 버튼</h3><p class="muted">전화·문자·이메일 버튼의 목적지를 지정합니다. 공용 화면에서는 실제 값을 노출하기 전 공개 범위를 반드시 확인해야 합니다.</p><form id="contactForm" class="stack"><label class="field">전화 및 문자 번호<input id="contactPhone" type="tel" autocomplete="off" placeholder="설정하지 않으면 버튼이 숨겨집니다"></label><label class="field">이메일 주소<input id="contactEmail" type="email" autocomplete="off" placeholder="설정하지 않으면 버튼이 숨겨집니다"></label><label class="field">연락처 공개 등급<select id="contactLevel" class="level-options"></select></label><button type="submit" class="btn primary">연락처 저장</button></form></div>
       <div class="setting-block owner-only"><h3>기록 백업</h3><p class="muted">기록은 브라우저에만 저장되어 삭제되거나 기기를 바꾸면 없어질 수 있습니다. JSON 파일로 백업하거나 복원할 수 있습니다.</p><div class="backup-actions"><button id="exportData" class="btn small">내 기록 백업</button><label class="btn small" for="importData" style="cursor:pointer">백업 불러오기</label><input id="importData" type="file" accept=".json,application/json" hidden></div><p class="section-note">백업에는 입력한 연락처 등도 포함되므로 파일 보관에 주의하세요.</p></div>
+    </div>
+  </section>
+
+  <section class="section access-gate route-page" id="accessGate" hidden aria-live="polite" tabindex="-1">
+    <div class="access-gate-content">
+      <span class="access-lock-icon" aria-hidden="true">🔒</span>
+      <h2 id="accessGateTitle">이 메뉴는 접근 제한이 있습니다.</h2>
+      <p id="accessGateMessage">필요한 회원 등급을 확인해 주세요.</p>
+      <button type="button" class="btn primary" id="accessLoginButton">로그인하기</button>
+      <button type="button" class="btn" id="accessBackButton">홈으로</button>
     </div>
   </section>
 
@@ -205,5 +304,6 @@
 <script src="backend.js" defer></script>
 <script src="signup.js" defer></script>
 <script src="stats.js" defer></script>
+<script src="access.js" defer></script>
 </body>
 </html>
