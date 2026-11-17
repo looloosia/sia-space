@@ -1,20 +1,146 @@
 (() => {
 "use strict";
-const $=id=>document.getElementById(id);
-const authButtons={login:$("authLoginMode"),signup:$("authSignupMode")};
-function notice(text){$("cloudStatus").textContent=text;}
-function setMode(signup){
- window.SIA_SIGNUP_MODE=Boolean(signup);
- const anonymous=!window.SIA_IDENTITY?.user;
- $("cloudLoginForm").hidden=!anonymous||signup;
- $("cloudSignupForm").hidden=!anonymous||!signup;
- authButtons.login.classList.toggle("primary",!signup);
- authButtons.signup.classList.toggle("primary",signup);
+const $ = id => document.getElementById(id);
+const client = window.SIA_SUPABASE;
+const PENDING_KEY = "sia-space-signup-pending-email-v1";
+const AUTH_RETURN = "https://looloosia.github.io/sia-space/?auth=verified#settings";
+const buttons = {login:$("authLoginMode"), signup:$("authSignupMode")};
+const steps = [$("authStep1"),$("authStep2"),$("authStep3")];
+let renderNumber=0;
+const notice=text=>{$("cloudStatus").textContent=text;};
+
+function pendingEmail() {
+  try {return localStorage.getItem(PENDING_KEY)||"";}catch{return "";}
 }
-authButtons.login.addEventListener("click",()=>setMode(false));
-authButtons.signup.addEventListener("click",()=>setMode(true));
-// Direct signup link: /sia-space/?signup=1#settings
-if(new URLSearchParams(window.location.search).get("signup")==="1")setMode(true);
+function savePendingEmail(email) {
+  try {if(email)localStorage.setItem(PENDING_KEY,email);else localStorage.removeItem(PENDING_KEY);}catch{}
+}
+function setMode(signup) {
+  window.SIA_SIGNUP_MODE=Boolean(signup);
+  const anonymous=!window.SIA_IDENTITY?.user;
+  $("cloudLoginForm").hidden=!anonymous||signup;
+  $("cloudSignupForm").hidden=!anonymous||!signup;
+  buttons.login.classList.toggle("primary",!signup);
+  buttons.signup.classList.toggle("primary",signup);
+  renderProgress();
+}
+buttons.login.onclick=()=>setMode(false);
+buttons.signup.onclick=()=>setMode(true);
+
+function paintProgress(stage,email,approved,admin) {
+  const panel=$("signupProgress");
+  panel.hidden=stage==="hidden";
+  if(panel.hidden)return;
+  steps.forEach((element,index)=>{
+    element.classList.toggle("done",index < (stage==="entry"?0:stage==="pending"?1:stage==="verified"?2:3));
+    element.classList.toggle("active",index === (stage==="entry"?0:stage==="pending"?1:stage==="verified"?2:-1));
+  });
+  const title=$("authProgressHeading");
+  const detail=$("authProgressText");
+  const address=$("authProgressEmail");
+  address.hidden=!email;
+  address.textContent=email?("가입 이메일: "+email):"";
+  $("checkEmailVerification").hidden=stage!=="pending"&&stage!=="unverified";
+  $("resendSignupEmail").hidden=stage!=="pending";
+  $("authProgressLogin").hidden=stage!=="pending"&&stage!=="unverified";
+  $("openGmail").hidden=stage!=="pending"||!email.toLowerCase().endsWith("@gmail.com");
+  if(stage==="entry") {
+    title.textContent="1단계 · 가입 신청";
+    detail.textContent="이름, 이메일과 비밀번호를 입력하세요. 신청하면 이메일 인증 단계로 넘어갑니다.";
+  } else if(stage==="pending") {
+    title.textContent="2단계 · 인증 메일을 확인해 주세요";
+    detail.textContent="이메일 받은편지함과 스팸함에서 인증 메일을 열고 '이메일 인증' 링크를 누르세요. 링크를 누르면 SIA SPACE로 돌아옵니다. 복귀 후에도 완료 표시가 없으면 아래에서 인증 상태를 확인하거나 로그인하세요.";
+  } else if(stage==="unverified") {
+    title.textContent="2단계 · 이메일 인증 대기";
+    detail.textContent="아직 이메일 인증 완료가 확인되지 않았습니다. 메일의 인증 링크를 눌러 주세요.";
+  } else if(stage==="verified") {
+    title.textContent="이메일 인증 완료 · 관리자 승인 대기";
+    detail.textContent="이메일 주소가 Supabase에서 인증된 것을 확인했습니다. 운영자가 승인하면 회원 전용 내용을 열람할 수 있습니다. 현재는 1등급 방문자 권한입니다.";
+  } else if(stage==="approved") {
+    title.textContent=admin?"이메일 인증 완료 · 관리자 계정":"이메일 인증 및 회원 승인 완료";
+    detail.textContent=admin?"관리자 인증이 완료됐습니다. 사이트 설정과 콘텐츠를 수정할 수 있습니다.":"이메일 인증과 운영자 승인이 모두 완료됐습니다. 현재 등급의 콘텐츠를 이용할 수 있습니다.";
+  }
+}
+
+async function renderProgress() {
+  const sequence=++renderNumber;
+  if(!client) {
+    paintProgress(window.SIA_SIGNUP_MODE?"entry":"hidden","",false,false);
+    return;
+  }
+  let authUser=null;
+  try {
+    const response=await client.auth.getUser();
+    authUser=response.error?null:response.data.user;
+  } catch {authUser=null;}
+  if(sequence!==renderNumber)return;
+  const identity=window.SIA_IDENTITY;
+  const pending=pendingEmail();
+  if(authUser) {
+    const verified=Boolean(authUser.email_confirmed_at||authUser.confirmed_at);
+    if(verified) {
+      savePendingEmail("");
+      const isSame=identity?.user?.id===authUser.id;
+      const isApproved=Boolean(isSame && (identity.approved || identity.admin));
+      paintProgress(isApproved?"approved":"verified",authUser.email||"",isApproved,Boolean(identity?.admin&&isSame));
+    }else{
+      paintProgress("unverified",authUser.email||pending,false,false);
+    }
+  } else if(pending) {
+    paintProgress("pending",pending,false,false);
+  } else if(window.SIA_SIGNUP_MODE) {
+    paintProgress("entry","",false,false);
+  } else if(new URLSearchParams(location.search).get("auth")==="verified") {
+    paintProgress("unverified","",false,false);
+  } else {
+    paintProgress("hidden","",false,false);
+  }
+}
+
+$("checkEmailVerification").onclick=async()=>{
+  $("checkEmailVerification").disabled=true;
+  notice("이메일 인증 상태를 확인하고 있습니다.");
+  try {
+    const {data,error}=await client.auth.getUser();
+    await renderProgress();
+    if(error||!data.user) {
+      notice("이 브라우저에 로그인된 세션이 없습니다. 인증 메일의 링크를 누른 뒤 홈페이지로 돌아오거나, 이메일 인증을 마쳤다면 로그인해 주세요.");
+    } else if(data.user.email_confirmed_at||data.user.confirmed_at) {
+      notice("이메일 인증 완료가 확인됐습니다.");
+    } else {
+      notice("이메일 인증을 아직 완료하지 않았습니다. 메일에서 인증 링크를 확인해 주세요.");
+    }
+  } catch(error) {notice("인증 확인에 실패했습니다: "+String(error.message||error));}
+  finally {$("checkEmailVerification").disabled=false;}
+};
+$("authProgressLogin").onclick=()=>{
+ setMode(false);
+ $("cloudEmail").value=pendingEmail();
+ $("cloudEmail").focus();
+};
+$("resendSignupEmail").onclick=async()=>{
+ const email=pendingEmail();
+ if(!email||!client){notice("먼저 회원가입 신청을 진행하세요.");return;}
+ const button=$("resendSignupEmail");button.disabled=true;
+ notice("인증 메일을 다시 요청하는 중입니다.");
+ try {
+  const {error}=await client.auth.resend({
+    type:"signup", email, options:{emailRedirectTo:AUTH_RETURN}
+  });
+  if(error)throw error;
+  notice("인증 메일 재발송을 요청했습니다. 받은편지함과 스팸함을 확인하세요.");
+ }catch(error){
+  notice("인증 메일 재발송 실패: "+String(error.message||error));
+ }finally{button.disabled=false;}
+};
+
+if(new URLSearchParams(location.search).get("signup")==="1") {
+  window.SIA_SIGNUP_MODE=true;
+  $("cloudLoginForm").hidden=true;
+  $("cloudSignupForm").hidden=false;
+  buttons.login.classList.remove("primary");
+  buttons.signup.classList.add("primary");
+}
 function statusCard(value){const p=document.createElement("p");p.className="muted";p.textContent=value;return p;}
 async function fetchProfiles(){
  const state=window.SIA_IDENTITY,client=window.SIA_SUPABASE,container=$("memberApprovals");
@@ -60,38 +186,45 @@ async function updateProfile(id,patch,button){
 }
 $("reloadMembers").onclick=fetchProfiles;
 $("cloudSignupForm").addEventListener("submit",async event=>{
- event.preventDefault();
- if(!window.SIA_SUPABASE){notice("Supabase 프로젝트가 아직 연결되지 않았습니다.");return;}
- if(window.SIA_IDENTITY?.user){notice("로그아웃한 뒤 가입 신청을 진행하세요.");return;}
- const name=$("signupName").value.trim(),email=$("signupEmail").value.trim();
- const password=$("signupPassword").value,again=$("signupPasswordConfirm").value;
- if(name.length<2||name.length>30){notice("표시 이름은 2~30자로 입력하세요.");return;}
- if(password.length<8||password!==again){notice("비밀번호는 8자 이상이어야 하며 확인란과 일치해야 합니다.");return;}
- const submit=event.currentTarget.querySelector("button[type=submit]");submit.disabled=true;
- notice("회원가입 신청을 처리하는 중입니다.");
- try{
-  const {data,error}=await window.SIA_SUPABASE.auth.signUp({
-   email,password,
-   options:{
-    data:{display_name:name},
-    emailRedirectTo:"https://looloosia.github.io/sia-space/"
-   }
-  });
-  if(error)throw error;
-  $("signupPassword").value="";$("signupPasswordConfirm").value="";
-  if(data.session){
-   notice("가입 신청이 접수됐습니다. 관리자 승인 전에는 1등급으로만 이용할 수 있습니다.");
-   window.location.reload();
-   return;
-  }
-  setMode(false);
-  notice("가입 신청을 접수했습니다. 이메일 인증 메일을 확인하세요. 인증 후에도 관리자 승인이 필요합니다.");
- }catch(error){notice("가입 신청 실패: "+String(error.message||error));}
- finally{submit.disabled=false;}
+  event.preventDefault();
+  if(!client){notice("현재 가입 서버가 연결되지 않았습니다.");return;}
+  if(window.SIA_IDENTITY?.user){notice("이미 로그인된 계정이 있습니다. 로그아웃 후 신청하세요.");return;}
+  const name=$("signupName").value.trim(),email=$("signupEmail").value.trim().toLowerCase();
+  const password=$("signupPassword").value,again=$("signupPasswordConfirm").value;
+  if(name.length<2||name.length>30){notice("이름은 2~30자로 입력하세요.");return;}
+  if(password.length<8||password!==again){notice("비밀번호가 8자 이상인지, 비밀번호 확인과 일치하는지 확인하세요.");return;}
+  const submit=event.currentTarget.querySelector('button[type="submit"]');
+  submit.disabled=true;
+  notice("가입 신청 중입니다. 신청 후에는 인증 메일을 확인해야 합니다.");
+  try {
+    const {data,error}=await client.auth.signUp({
+      email,password,
+      options:{data:{display_name:name},emailRedirectTo:AUTH_RETURN}
+    });
+    if(error)throw error;
+    $("signupPassword").value="";
+    $("signupPasswordConfirm").value="";
+    savePendingEmail(email);
+    setMode(false);
+    await renderProgress();
+    if(data.session) {
+      notice("가입 요청을 접수했습니다. 로그인 상태가 확인됐으며, 실제 이메일 인증 여부를 확인하고 있습니다.");
+    } else {
+      notice("가입 신청을 접수했습니다. 이메일 인증이 필요합니다. 위 안내에 따라 메일을 확인해 주세요.");
+    }
+  }catch(error){
+    notice("가입 신청 실패: "+String(error.message||error)+". 이메일 주소와 인증 메일 발송 설정을 확인해 주세요.");
+  }finally{submit.disabled=false;}
 });
+
 document.addEventListener("sia:auth",()=>{
- const me=window.SIA_IDENTITY;
- if(me?.user)setMode(false);
- if(me?.admin)fetchProfiles();
+  const identity=window.SIA_IDENTITY;
+  if(identity?.user)setMode(false);
+  if(identity?.admin)fetchProfiles();
+  renderProgress();
 });
+client?.auth.onAuthStateChange((_event,_session)=>{
+  setTimeout(()=>{renderProgress();},0);
+});
+renderProgress();
 })();
