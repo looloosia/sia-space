@@ -135,3 +135,13 @@ html.sia-visitor:not(.sia-public-loaded) #heroArt,
 html.sia-visitor:not(.sia-public-loaded) #currentStatus,
 html.sia-visitor:not(.sia-public-loaded) #statusUpdated,
 html.sia-visitor:not(.sia-public-loaded) .hero .inline-status{visibility:hidden!important}
+
+/* 가입 신청 및 관리자 회원 승인 */
+#cloudSignupForm .section-note{margin:0;padding:12px 14px;background:#edf3fc;border-radius:5px}
+.member-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid #e7eaf0}
+.member-row:last-child{border-bottom:0}
+.member-row strong{font-size:13px;font-weight:600;color:#28303a}
+.member-row .muted{font-size:11px;margin:5px 0 0;overflow-wrap:anywhere}
+.member-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.member-actions .select{min-width:130px;width:auto}
+@media(max-width:760px){.member-row{align-items:stretch;flex-direction:column}.member-actions{justify-content:flex-start}}
