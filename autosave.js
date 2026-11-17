@@ -108,10 +108,11 @@ function plan(before,after){
 async function execute(op){
  if(!getAdmin())throw Error("관리자 로그인이 필요합니다.");
  if(op.type==="photo"){
-  let imageUrl=op.url||"";
+  let imageUrl=op.url||"", uploadedFrom=null;
   if(imageUrl==="@local"){
    const data=localStorage.getItem("sia-space-hero-photo-v1")||"";
    if(!data.startsWith("data:image/"))throw Error("사진 파일을 다시 선택해 주세요.");
+   uploadedFrom=data;
    const blob=await fetch(data).then(res=>res.blob());
    if(blob.size>5242880)throw Error("대표 사진 용량이 5MB를 초과합니다.");
    const filePath="hero/cover-"+crypto.randomUUID()+".jpg";
@@ -126,7 +127,7 @@ async function execute(op){
     .eq("id",1).select("id").single();
   if(error)throw error;
   if(!data)throw Error("대표 사진 저장을 확인하지 못했습니다.");
-  if(imageUrl && localStorage.getItem("sia-space-hero-photo-v1")?.startsWith("data:")){
+  if(uploadedFrom && localStorage.getItem("sia-space-hero-photo-v1")===uploadedFrom){
    localStorage.setItem("sia-space-hero-photo-v1",imageUrl);
    document.dispatchEvent(new CustomEvent("sia:photo-sync",{detail:{url:imageUrl}}));
   }
@@ -183,11 +184,8 @@ async function flush(){
 function addOperations(ops){
  if(!getAdmin()||!ops.length)return;
  queue.push(...ops);
- // Keep the last 500 actions; a very large backup import should use explicit advanced publish.
- if(queue.length>500){
-  queue.splice(0,queue.length-500);
-  ui("자동 저장 대기열이 너무 깁니다. 서버 동기화 상태를 확인해 주세요.","error");
- }
+ // Never silently discard unsaved changes, even if a network outage creates a long queue.
+ if(queue.length>500)console.warn("자동 저장 대기 항목이 많습니다:",queue.length);
  persist();
  ui("서버에 자동 저장 중입니다… ("+queue.length+"건)");
  flush();
