@@ -292,9 +292,9 @@
           <button type="submit" class="btn primary">가입 신청</button>
         </form>
         <div id="cloudAdminTools" hidden class="stack">
-          <p class="muted">관리자 전용: 아래 버튼으로 서버 자료를 확인하거나 현재 브라우저의 기록을 게시할 수 있습니다.</p>
+          <p class="muted">관리자 저장·수정·삭제는 자동으로 서버에 반영됩니다. 아래는 데이터 복구를 위한 선택 기능입니다.</p>
           <button id="cloudLoad" type="button" class="btn">서버 기록 불러오기</button>
-          <button id="cloudPublish" type="button" class="btn primary">현재 기록 서버에 게시</button>
+          <button id="cloudPublish" type="button" class="btn">전체 로컬 기록 일괄 게시 (복원용)</button>
         </div>
         <button id="cloudViewerRefresh" type="button" class="btn" hidden>서버 내용 새로고침</button>
         <button id="restoreLocalDraft" type="button" class="btn" hidden>이전 로컬 기록 복구</button>
@@ -305,8 +305,8 @@
   </section>
 
   <section class="section route-page" id="admin" data-section="admin">
-    <div class="section-heading"><div><div class="section-label">사이트 관리</div><h2>관리자 설정</h2></div><p>메뉴별 공개 등급과 콘텐츠를 관리합니다. 변경 후 서버에 게시해야 방문자에게 적용됩니다.</p></div>
-    <div class="row admin-publish-actions"><button class="btn primary owner-only" id="adminPublishShortcut" type="button">공개 범위·기록 서버에 게시</button><button class="btn owner-only" id="adminCloudLoadShortcut" type="button">서버 데이터 다시 불러오기</button></div><p id="adminPublishStatus" class="muted" role="status">메뉴별 조회 등급을 변경한 뒤 서버에 게시하세요.</p>
+    <div class="section-heading"><div><div class="section-label">사이트 관리</div><h2>관리자 설정</h2></div><p>등급과 콘텐츠 변경은 저장 즉시 서버에 자동 반영됩니다.</p></div>
+    <div class="row admin-publish-actions"><button class="btn owner-only" id="adminCloudLoadShortcut" type="button">서버 데이터 다시 불러오기</button></div><div class="auto-sync-panel owner-only"><p id="autoSyncStatus" class="muted" role="status" aria-live="polite">저장하면 서버에 자동으로 게시됩니다.</p><button id="autoSyncRetry" type="button" class="btn small" hidden>실패한 저장 재시도</button></div><p id="adminPublishStatus" class="muted" role="status">개별 변경사항은 자동으로 서버에 반영됩니다.</p>
     <div class="setting-grid">
       <div class="setting-block owner-only" id="communityModerationPanel">
         <h3>소통 기능 · 글쓰기 등급</h3>
@@ -324,10 +324,10 @@
       <div class="setting-block owner-only"><h3>첫 화면 대표 사진</h3><p class="muted">사진을 올리거나 이미지 URL을 입력할 수 있습니다. 아직은 이 브라우저에만 저장됩니다.</p>
         <label class="field">컴퓨터·휴대폰에서 사진 선택<input type="file" id="heroImageFile" accept="image/jpeg,image/png,image/webp,image/avif"></label>
         <label class="field" style="margin-top:12px">이미지 주소로 설정<input type="url" id="heroImageUrl" placeholder="https://..."></label>
-        <div class="row" style="margin-top:13px"><button class="btn primary" type="button" id="heroUrlSave">대표 사진 적용</button><button class="btn" type="button" id="heroImageClear">사진 제거</button></div><p class="section-note" id="heroImageStatus">사진은 브라우저에 저장됩니다.</p>
+        <div class="row" style="margin-top:13px"><button class="btn primary" type="button" id="heroUrlSave">대표 사진 적용</button><button class="btn" type="button" id="heroImageClear">사진 제거</button></div><p class="section-note" id="heroImageStatus">대표 사진을 변경하면 서버에 자동 저장됩니다.</p>
       </div>
       <div class="setting-block owner-only"><h3>등급 이름과 단계</h3><p class="muted">등급은 숫자가 클수록 접근 가능한 범위가 넓어집니다.</p><div id="levelEditor"></div><div class="row" style="margin-top:16px"><button class="btn small" id="addLevel">+ 등급 추가</button></div></div>
-      <div class="setting-block owner-only"><h3>모든 메뉴의 공개 범위</h3><p class="muted">홈, 현재 상태, 시간기록, 영화·드라마, 사진·책 등 각 메뉴의 최소 조회 등급을 개별 지정합니다. 회원가입·로그인은 항상 접근 가능하고 관리자 설정은 관리자만 이용합니다.</p><div id="sectionEditor"></div><p class="section-note">변경한 등급은 서버에 게시한 뒤 모든 방문자에게 적용됩니다. 항목별 공개 등급도 별도로 적용됩니다.</p></div>
+      <div class="setting-block owner-only"><h3>모든 메뉴의 공개 범위</h3><p class="muted">홈, 현재 상태, 시간기록, 영화·드라마, 사진·책 등 각 메뉴의 최소 조회 등급을 개별 지정합니다. 회원가입·로그인은 항상 접근 가능하고 관리자 설정은 관리자만 이용합니다.</p><div id="sectionEditor"></div><p class="section-note">등급을 선택하면 서버에 자동으로 저장됩니다. 항목별 공개 등급도 별도로 적용됩니다.</p></div>
       <div class="setting-block owner-only"><h3>활동 상태 설정</h3><label class="field">상태 공개 등급<select id="statusLevel" class="level-options"></select></label><h4>선택할 수 있는 상태</h4><div id="statusOptionsEditor"></div><form id="newStatusForm" class="row" style="margin-top:14px"><input id="newStatusInput" class="input" style="flex:1;min-width:130px" maxlength="35" placeholder="예: 도서관에서 공부 중" required><button class="btn small" type="submit">추가</button></form></div>
       <div class="setting-block owner-only"><h3>연습 시간 공개 설정</h3><label class="field">시간기록 공개 등급<select id="practiceLevel" class="level-options"></select></label><p class="muted">캘린더와 총 연습 시간의 공개 범위를 지정합니다.</p><h4>미리보기 등급</h4><label class="field">방문자 등급으로 미리 보기<select id="previewLevel" class="level-options"></select></label><p class="section-note">체험용 보기 전환이며 로그인이나 실제 보안과 무관합니다.</p></div>
       <div class="setting-block owner-only"><h3>소셜미디어 링크</h3><form id="socialForm" class="stack"><label class="field">인스타그램 주소<input id="socialInstagram" type="url" placeholder="https://www.instagram.com/..."></label><label class="field">유튜브 채널 주소<input id="socialYoutube" type="url" placeholder="https://www.youtube.com/..."></label><label class="field">네이버 블로그 주소<input id="socialBlog" type="url" placeholder="https://blog.naver.com/..."></label><button class="btn primary" type="submit">링크 저장</button></form></div>
@@ -353,12 +353,13 @@
 <link rel="stylesheet" href="enhancements.css?v=mobile-20261117">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <script src="site-config.js?v=contact-20261117" defer></script>
-<script src="app.js?v=contact-20261117" defer></script>
-<script src="enhancements.js" defer></script>
-<script src="backend.js?v=contact-20261117" defer></script>
+<script src="app.js?v=autosave-20261117" defer></script>
+<script src="enhancements.js?v=autosave-20261117" defer></script>
+<script src="backend.js?v=autosave-20261117" defer></script>
 <script src="signup.js" defer></script>
 <script src="stats.js" defer></script>
 <script src="access.js?v=mobile-20261117" defer></script>
 <script src="community.js?v=contact-20261117" defer></script>
+<script src="autosave.js?v=autosave-20261117" defer></script>
 </body>
 </html>
