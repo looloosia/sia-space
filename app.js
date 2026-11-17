@@ -2,14 +2,19 @@
 "use strict";
 const $=id=>document.getElementById(id),make=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=String(txt);return e;};
 const types=["사진","책","장소","프로젝트","음악","유튜브","개인 위키","타임라인"];
-const sections={about:"소개",now:"현재 상태",practice:"연습과 공부",watch:"영화·드라마",collections:"아카이브",community:"소통",contact:"연락처"};
-const defaults=()=>({version:2,levels:["일반 방문자","일반 회원","친구","특별 회원"],sectionLevels:{about:1,now:1,practice:1,watch:1,collections:1,community:1,contact:2},practiceLevel:1,statusLevel:1,contactLevel:2,previewLevel:1,statuses:["쉬는 중","피아노 연습 중","공부 중","수업 중","이동 중","독서 중","외출 중","작업 중","수면 중"],currentStatus:"쉬는 중",statusAt:null,timer:{kind:"피아노 연습",active:false,startedAt:null,elapsedMs:0},sessions:[],watch:[],entries:[],social:{instagram:"",youtube:"",blog:""},contact:{phone:"",email:""}});
+const archiveMap={"사진":"photos","책":"books","장소":"places","프로젝트":"projects","음악":"music","유튜브":"youtube","개인 위키":"wiki","타임라인":"timeline"};
+const sections={home:"홈",now:"현재 상태",practice:"연습 기록",watch:"영화·드라마",photos:"사진",books:"책",places:"장소",projects:"프로젝트",music:"음악",youtube:"유튜브",wiki:"개인 위키",timeline:"타임라인",community:"소통",contact:"연락처"};
+const defaults=()=>({version:2,levels:["일반 방문자","일반 회원","친구","특별 회원"],sectionLevels:{home:1,now:1,practice:1,watch:1,photos:1,books:1,places:1,projects:1,music:1,youtube:1,wiki:1,timeline:1,community:1,contact:2},practiceLevel:1,statusLevel:1,contactLevel:2,previewLevel:1,statuses:["쉬는 중","피아노 연습 중","공부 중","수업 중","이동 중","독서 중","외출 중","작업 중","수면 중"],currentStatus:"쉬는 중",statusAt:null,timer:{kind:"피아노 연습",active:false,startedAt:null,elapsedMs:0},sessions:[],watch:[],entries:[],social:{instagram:"",youtube:"",blog:""},contact:{phone:"",email:""}});
 let state;try{state={...defaults(),...JSON.parse(localStorage.getItem("sia-space-local-v2")||"null")};}catch{state=defaults();}
 if(!Array.isArray(state.levels)||state.levels.length<2)state=defaults();
 state.levels=state.levels.slice(0,10);state.sessions=Array.isArray(state.sessions)?state.sessions:[];state.watch=Array.isArray(state.watch)?state.watch:[];state.entries=Array.isArray(state.entries)?state.entries:[];state.statuses=Array.isArray(state.statuses)&&state.statuses.length?state.statuses:defaults().statuses;
 state.timer=state.timer&&typeof state.timer==="object"?state.timer:defaults().timer;
 if(!state.timer.active||!Number.isFinite(state.timer.startedAt)||state.timer.startedAt>Date.now()){state.timer.active=false;state.timer.startedAt=null;}
-state.social=state.social||defaults().social;state.contact=state.contact||defaults().contact;state.sectionLevels=state.sectionLevels||defaults().sectionLevels;
+state.social=state.social||defaults().social;state.contact=state.contact||defaults().contact;
+const historicalSections=state.sectionLevels||{};
+state.sectionLevels={...defaults().sectionLevels,...historicalSections};
+if(!Object.hasOwn(historicalSections,"home")&&historicalSections.about)state.sectionLevels.home=historicalSections.about;
+for(const slug of Object.values(archiveMap))if(!Object.hasOwn(historicalSections,slug)&&historicalSections.collections)state.sectionLevels[slug]=historicalSections.collections;
 delete state.locationLevel;
 delete state.sectionLevels.location;
 const save=()=>{delete state.locationLevel;if(state.sectionLevels)delete state.sectionLevels.location;try{localStorage.setItem("sia-space-local-v2",JSON.stringify(state));}catch{toast("저장 공간이 부족합니다.");}};
@@ -17,7 +22,7 @@ const date=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.g
 const time=ms=>{let s=Math.floor(Math.max(0,ms)/1000);return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(x=>String(x).padStart(2,"0")).join(":");};
 const duration=ms=>time(ms);
 const id=()=>Math.random().toString(36).slice(2)+Date.now(),level=n=>n+"등급 · "+(state.levels[n-1]||"등급");
-let month=new Date();month.setDate(1);let selected=today(),category="전체",editingWatch=null,editingEntry=null;
+let month=new Date();month.setDate(1);let selected=today(),editingWatch=null,editingEntry=null;
 function toast(s){const el=$("toast");el.textContent=s;el.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.hidden=true,3500);}
 function options(el,values,current){el.replaceChildren(...values.map(v=>new Option(v[0],String(v[1]))));if(current!==undefined)el.value=String(current);}
 function levelOptions(){document.querySelectorAll(".level-options").forEach(el=>{let v=el.value;options(el,state.levels.map((name,i)=>[(i+1)+"등급 · "+name,i+1]),v||1);});}
@@ -90,10 +95,21 @@ function calendar(){
 $("prevMonth").onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()-1,1);calendar();};
 $("nextMonth").onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()+1,1);calendar();};
 function cards(kind){
- const watch=kind==="watch",items=watch?state.watch:state.entries,target=$(watch?"watchList":"entriesList"),search=$(watch?"watchSearch":"entrySearch").value.trim().toLowerCase();
+ if(kind==="watch"){
+   const credit=$("tmdbAttribution");if(credit)credit.hidden=!state.watch.some(x=>x.posterSource==="tmdb");
+   const search=$("watchSearch").value.trim().toLowerCase();
+   renderCards($("watchList"),state.watch.filter(x=>(x.title+" "+(x.body||"")).toLowerCase().includes(search)),true);
+   return;
+ }
+ for(const [label,slug] of Object.entries(archiveMap)){
+   const input=$("archiveSearch-"+slug);
+   const search=input.value.trim().toLowerCase();
+   renderCards($("archiveList-"+slug),state.entries.filter(x=>x.kind===label&&(x.title+" "+(x.body||"")).toLowerCase().includes(search)),false);
+ }
+}
+function renderCards(target,items,watch){
  target.replaceChildren();
- if(watch){const credit=document.getElementById("tmdbAttribution");if(credit)credit.hidden=!state.watch.some(x=>x.posterSource==="tmdb");}
- const matched=items.filter(x=>(watch||category==="전체"||x.kind===category)&&(String(x.title)+" "+String(x.body||"")).toLowerCase().includes(search)).sort((a,b)=>Number(b.created)-Number(a.created));
+ const matched=items.slice().sort((a,b)=>Number(b.created)-Number(a.created));
  if(!matched.length){target.append(make("p","list-empty","아직 등록된 기록이 없습니다."));return;}
  matched.forEach(x=>{
   const card=make("article","entry-card");
@@ -105,34 +121,72 @@ function cards(kind){
   if(watch&&validUrl(x.posterSourceUrl)){const origin=make("a","poster-credit",x.posterSource==="tvmaze"?"TVmaze 작품 정보 ↗":x.posterSource==="itunes"?"Apple TV 작품 정보 ↗":"포스터 출처 ↗");origin.href=x.posterSourceUrl;origin.target="_blank";origin.rel="noopener noreferrer";card.append(origin);}
   if(!watch&&validUrl(x.url)){const a=make("a","link-button","링크 열기 ↗");a.href=x.url;a.target="_blank";a.rel="noopener noreferrer";card.append(a);}
   const foot=make("footer"),edit=make("button","link-button owner-only","수정"),del=make("button","link-button owner-only","삭제");
-  edit.onclick=()=>openForm(kind,x);del.onclick=()=>{if(!confirm("이 기록을 삭제할까요?"))return;state[watch?"watch":"entries"]=items.filter(v=>v.id!==x.id);save();cards(kind);};
+  edit.onclick=()=>openForm(watch?"watch":"entries",x);
+  del.onclick=()=>{
+    if(!confirm("이 기록을 삭제할까요?"))return;
+    if(watch)state.watch=state.watch.filter(v=>v.id!==x.id);
+    else state.entries=state.entries.filter(v=>v.id!==x.id);
+    save();cards(watch?"watch":"entries");
+  };
   foot.append(edit,del);card.append(foot);target.append(card);
  });
 }
 function validUrl(v){try{return new URL(v).protocol==="https:";}catch{return false;}}
 function videoId(v){try{const u=new URL(v);if(u.protocol!=="https:")return null;let val=null;if(["youtube.com","www.youtube.com","m.youtube.com"].includes(u.hostname))val=u.searchParams.get("v");else if(u.hostname==="youtu.be")val=u.pathname.split("/")[1];return /^[a-zA-Z0-9_-]{11}$/.test(val)?val:null;}catch{return null;}}
-function categories(){const bar=$("categoryBar");bar.replaceChildren();["전체",...types].forEach(v=>{const b=make("button","chip"+(category===v?" active":""),v);b.onclick=()=>{category=v;categories();cards("entries");};bar.append(b);});}
-function openForm(kind,x){
- const watch=kind==="watch",form=$(watch?"watchForm":"entryForm");form.hidden=false;
- if(watch){editingWatch=x?.id||null;$("watchFormTitle").textContent=x?"감상 기록 수정":"감상 기록 추가";$("watchTitle").value=x?.title||"";$("watchKind").value=x?.kind||"영화";$("watchDate").value=x?.date||today();$("watchLevel").value=x?.minLevel||1;$("watchNote").value=x?.body||"";$("watchPoster").value=x?.posterUrl||"";$("watchPosterSource").value=x?.posterSource||"";$("watchPosterSourceUrl").value=x?.posterSourceUrl||"";$("posterResults").replaceChildren();}
- else{editingEntry=x?.id||null;$("entryFormTitle").textContent=x?"아카이브 수정":"아카이브 추가";$("entryTitle").value=x?.title||"";$("entryKind").value=x?.kind||(types.includes(category)?category:"사진");$("entryUrl").value=x?.url||"";$("entryLevel").value=x?.minLevel||1;$("entryBody").value=x?.body||"";}
+function categories(){cards("entries");}
+function openForm(kind,x,chosenSlug){
+ const watch=kind==="watch",form=$(watch?"watchForm":"entryForm");
+ if(!watch){
+  const slug=archiveMap[x?.kind]||chosenSlug||"photos";
+  const section=$(slug);
+  if(section) section.append(form);
+ }
+ form.hidden=false;
+ if(watch){
+  editingWatch=x?.id||null;
+  $("watchFormTitle").textContent=x?"감상 기록 수정":"감상 기록 추가";
+  $("watchTitle").value=x?.title||"";$("watchKind").value=x?.kind||"영화";
+  $("watchDate").value=x?.date||today();$("watchLevel").value=x?.minLevel||1;
+  $("watchNote").value=x?.body||"";$("watchPoster").value=x?.posterUrl||"";
+  $("watchPosterSource").value=x?.posterSource||"";$("watchPosterSourceUrl").value=x?.posterSourceUrl||"";
+  $("posterResults").replaceChildren();
+ } else {
+  editingEntry=x?.id||null;
+  $("entryFormTitle").textContent=x?"기록 수정":"기록 추가";
+  $("entryTitle").value=x?.title||"";
+  const kindLabel=x?.kind||Object.keys(archiveMap).find(key=>archiveMap[key]===chosenSlug)||"사진";
+  $("entryKind").value=kindLabel;
+  $("entryUrl").value=x?.url||"";$("entryLevel").value=x?.minLevel||1;
+  $("entryBody").value=x?.body||"";
+ }
  form.scrollIntoView({behavior:"smooth",block:"center"});
 }
 types.forEach(v=>$("entryKind").append(new Option(v,v)));
-$("watchAddToggle").onclick=()=>openForm("watch");$("entryAddToggle").onclick=()=>openForm("entries");
+$("watchAddToggle").onclick=()=>openForm("watch");
+document.querySelectorAll("[data-archive-add]").forEach(button=>{
+ button.onclick=()=>openForm("entries",null,button.dataset.archiveAdd);
+});
 $("watchCancel").onclick=()=>{$("watchForm").hidden=true;editingWatch=null;};
 $("entryCancel").onclick=()=>{$("entryForm").hidden=true;editingEntry=null;};
-$("watchSearch").oninput=()=>cards("watch");$("entrySearch").oninput=()=>cards("entries");
+$("watchSearch").oninput=()=>cards("watch");
+document.querySelectorAll('[id^="archiveSearch-"]').forEach(input=>{input.oninput=()=>cards("entries");});
 $("watchForm").onsubmit=e=>{
  e.preventDefault();const old=state.watch.find(x=>x.id===editingWatch);
  const entry={id:old?.id||id(),created:old?.created||Date.now(),title:$("watchTitle").value.trim(),kind:$("watchKind").value,date:$("watchDate").value,minLevel:Number($("watchLevel").value),body:$("watchNote").value.trim(),posterUrl:$("watchPoster").value.trim(),posterSource:$("watchPosterSource").value,posterSourceUrl:$("watchPosterSourceUrl").value};
- if(!entry.title||!entry.date)return;if(entry.posterUrl&&!validUrl(entry.posterUrl))return toast("포스터는 https:// 주소만 등록할 수 있습니다.");state.watch=state.watch.filter(x=>x.id!==editingWatch);state.watch.push(entry);save();$("watchForm").hidden=true;editingWatch=null;cards("watch");toast("감상 기록을 저장했습니다.");
+ if(!entry.title||!entry.date)return;
+ if(entry.posterUrl&&!validUrl(entry.posterUrl))return toast("포스터는 https:// 주소만 등록할 수 있습니다.");
+ state.watch=state.watch.filter(x=>x.id!==editingWatch);state.watch.push(entry);
+ save();$("watchForm").hidden=true;editingWatch=null;cards("watch");toast("감상 기록을 저장했습니다.");
 };
 $("entryForm").onsubmit=e=>{
  e.preventDefault();const old=state.entries.find(x=>x.id===editingEntry),url=$("entryUrl").value.trim();
  if(url&&!validUrl(url))return toast("https:// 링크만 등록할 수 있습니다.");
  const entry={id:old?.id||id(),created:old?.created||Date.now(),title:$("entryTitle").value.trim(),kind:$("entryKind").value,url,minLevel:Number($("entryLevel").value),body:$("entryBody").value.trim()};
- if(!entry.title)return;state.entries=state.entries.filter(x=>x.id!==editingEntry);state.entries.push(entry);save();$("entryForm").hidden=true;editingEntry=null;cards("entries");toast("아카이브에 저장했습니다.");
+ if(!entry.title)return;
+ state.entries=state.entries.filter(x=>x.id!==editingEntry);state.entries.push(entry);
+ save();$("entryForm").hidden=true;editingEntry=null;cards("entries");
+ toast("기록을 저장했습니다.");
+ const selectedSlug=archiveMap[entry.kind];if(selectedSlug&&location.hash!=="#"+selectedSlug)location.hash="#"+selectedSlug;
 };
 function socialUrl(v,allowed){try{const u=new URL(v);return u.protocol==="https:"&&allowed.some(host=>u.hostname===host||u.hostname.endsWith("."+host))?u.href:null;}catch{return null;}}
 function renderSocial(){
@@ -163,10 +217,19 @@ $("importData").onchange=async e=>{
   state={...defaults(),...imported};state.levels=state.levels.slice(0,10);state.timer={...defaults().timer};save();settings();calendar();cards("watch");cards("entries");timerRender();toast("백업을 불러왔습니다.");
  }catch(err){toast(err.message||"백업을 읽을 수 없습니다.");}finally{e.target.value="";}
 };
-const menu=$("menuButton"),nav=$("mainNav");menu.onclick=()=>{const opened=nav.classList.toggle("open");menu.setAttribute("aria-expanded",String(opened));};nav.querySelectorAll("a").forEach(a=>a.onclick=()=>{nav.classList.remove("open");menu.setAttribute("aria-expanded","false");});
+const menu=$("menuButton"),nav=$("mainNav");menu.onclick=()=>{const opened=nav.classList.toggle("open");menu.setAttribute("aria-expanded",String(opened));};nav.querySelectorAll("a").forEach(a=>a.onclick=()=>{
+ nav.classList.remove("open");menu.setAttribute("aria-expanded","false");
+ const details=$("archiveNav");if(details)details.open=false;
+});
 window.SIA_BRIDGE={
  snapshot:()=>JSON.parse(JSON.stringify(state)),
- hydrate:(patch)=>{state={...state,...patch};delete state.locationLevel;if(state.sectionLevels)delete state.sectionLevels.location;save();settings();timerRender();calendar();categories();cards("watch");cards("entries");}
+ hydrate:(patch)=>{
+ state={...state,...patch};
+ state.sectionLevels={...defaults().sectionLevels,...state.sectionLevels};
+ delete state.locationLevel;if(state.sectionLevels)delete state.sectionLevels.location;
+ save();settings();timerRender();calendar();categories();cards("watch");
+ document.dispatchEvent(new Event("sia:menu-data-updated"));
+}
 };
-settings();timerRender();calendar();categories();cards("watch");cards("entries");
+settings();timerRender();calendar();categories();cards("watch");
 })();
