@@ -225,9 +225,6 @@ $("accessLoginButton").onclick=()=>{
  nextAfterLogin=selectedRoute();location.hash="#settings";render(true);
 };
 $("accessBackButton").onclick=()=>{location.hash="#home";render(true);};
-$("adminPublishShortcut").onclick=()=>{
- if(identity().admin)$("cloudPublish")?.click();
-};
 $("adminCloudLoadShortcut").onclick=()=>{
  if(identity().admin)$("cloudLoad")?.click();
 };
