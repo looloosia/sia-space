@@ -70,7 +70,6 @@ main{padding-bottom:45px}
 .access-head{font-size:11px;color:#7b8592}
 .access-row>b{color:#3a6ca6}
 .access-note{color:#8b929d}
-.location-panel .map-blank{border-radius:6px;background:repeating-linear-gradient(35deg,#f1f3f5,#f1f3f5 28px,#e8ebee 29px,#e8ebee 30px)}
 .contact-pane{min-height:75px}
 .poster-cover{height:245px;display:flex;align-items:center;justify-content:center;background:#eef0f3;border-radius:4px;overflow:hidden}
 .poster-cover img{height:100%;width:100%;object-fit:contain}
@@ -120,3 +119,19 @@ html.cloud-authorizing #heroArt {visibility:hidden!important}
 #cloudAccountPanel{border-color:#cbd9ea}
 #cloudStatus{font-size:12px;line-height:1.9}
 .poster-result.selected{border:2px solid #416da6;background:#eaf2ff}
+
+/* 편집 화면은 기본적으로 숨기고, 서버에서 관리자 권한을 확인한 뒤에만 표시합니다. */
+html.sia-visitor .owner-only{display:none!important}
+/* 서버에서 등급별 자료를 불러오기 전에는 로컬 저장 내역을 외부 화면에 표시하지 않습니다. */
+html.sia-visitor:not(.sia-public-loaded) #watchList,
+html.sia-visitor:not(.sia-public-loaded) #entriesList,
+html.sia-visitor:not(.sia-public-loaded) #timerSummary,
+html.sia-visitor:not(.sia-public-loaded) #calendarGrid,
+html.sia-visitor:not(.sia-public-loaded) #selectedDateRecords,
+html.sia-visitor:not(.sia-public-loaded) #socialButtons,
+html.sia-visitor:not(.sia-public-loaded) #contactButtons,
+html.sia-visitor:not(.sia-public-loaded) #gradePreview{display:none!important}
+html.sia-visitor:not(.sia-public-loaded) #heroArt,
+html.sia-visitor:not(.sia-public-loaded) #currentStatus,
+html.sia-visitor:not(.sia-public-loaded) #statusUpdated,
+html.sia-visitor:not(.sia-public-loaded) .hero .inline-status{visibility:hidden!important}
