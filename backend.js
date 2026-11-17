@@ -6,6 +6,7 @@ const ready=Boolean(url&&key);
 if(!ready){status("아직 서버가 연결되지 않았습니다. Supabase 연결 정보를 입력하면 로그인·게시 기능이 활성화됩니다.");return;}
 if(!/^https:\/\/[a-z0-9.-]+\.supabase\.co\/?$/i.test(url)||!window.supabase?.createClient){status("Supabase 연결 정보나 라이브러리를 확인하세요.");return;}
 const client=window.supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+$("localNotice").textContent="서버 연결 모드입니다. 회원 등급에 따른 서버 조회는 활성화할 수 있지만, 새 기록은 관리자가 '서버에 게시'를 눌러야 다른 방문자에게 반영됩니다.";
 window.SIA_SUPABASE=client;
 let user=null,admin=false,memberLevel=1,loading=false,adminLoaded=false;
 const loadingButton=(id,isLoading)=>{$(id).disabled=isLoading;};
@@ -23,6 +24,7 @@ async function who(){
  adminLoaded=false;
  let profile=null;if(user){profile=await query(client.from("member_profiles").select("member_level,is_admin").eq("id",user.id).maybeSingle());}
  memberLevel=profile?.member_level||1;admin=Boolean(profile?.is_admin);
+ if(admin)document.documentElement.classList.remove("cloud-authorizing");
  view();
 }
 function reconcileVisibility(visibility){
@@ -67,6 +69,7 @@ async function loadCloud({force=false}={}){
   try{if(branding.hero_image_url)window.localStorage.setItem("sia-space-hero-photo-v1",branding.hero_image_url);else window.localStorage.removeItem("sia-space-hero-photo-v1");}catch{}
   document.dispatchEvent(new CustomEvent("sia:photo-sync",{detail:{url:branding.hero_image_url||""}}));
   reconcileVisibility(pageRules);
+  document.documentElement.classList.remove("cloud-authorizing");
   if(admin)adminLoaded=true;
   view();status((admin?"관리자":"방문자")+" · 서버 기록을 불러왔습니다. "+(admin?"변경 후 '서버에 게시'를 눌러야 반영됩니다.":"")); 
  }catch(err){status("서버 불러오기 실패: "+String(err.message||err));}
@@ -148,7 +151,9 @@ $("cloudLoginForm").addEventListener("submit",async e=>{
 });
 $("cloudLogout").addEventListener("click",async()=>{
  if(!confirm("로그아웃하면 이 브라우저의 기록을 서버의 공개 자료로 바꿉니다. 저장하지 않은 로컬 기록이 있다면 먼저 백업하세요. 계속할까요?"))return;
- await client.auth.signOut();user=null;admin=false;memberLevel=1;view();await loadCloud({force:true});
+ await client.auth.signOut();user=null;admin=false;memberLevel=1;adminLoaded=false;
+ window.SIA_BRIDGE.hydrate({entries:[],watch:[],sessions:[],contact:{phone:"",email:""},currentStatus:"비공개",statusAt:null,previewLevel:1});
+ document.documentElement.classList.add("cloud-authorizing");view();await loadCloud({force:true});
 });
 $("cloudViewerRefresh").onclick=async()=>{if(!confirm("현재 브라우저 기록을 서버에서 불러온 내용으로 바꾸고 싶나요? 로컬 기록은 먼저 JSON 백업하세요."))return;await loadCloud({force:true});};
 $("cloudLoad").onclick=async()=>{if(!confirm("현재 브라우저 데이터를 서버 내용으로 바꿉니다. 저장하지 않은 기록이 있으면 JSON 백업 후 진행하세요. 계속할까요?"))return;await loadCloud({force:true});};
