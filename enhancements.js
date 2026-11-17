@@ -3,6 +3,9 @@
 const $=id=>document.getElementById(id);
 const photoKey="sia-space-hero-photo-v1";
 function say(message){const e=$("heroImageStatus");if(e)e.textContent=message;}
+function publishPhoto(url) {
+ document.dispatchEvent(new CustomEvent("sia:photo-local-change",{detail:{url}}));
+}
 function validHttps(value){try{const u=new URL(value);return u.protocol==="https:"?u.href:null;}catch{return null;}}
 function setPhoto(source){
  const image=$("heroPhoto"),placeholder=$("heroPhotoPlaceholder");
@@ -16,12 +19,12 @@ document.addEventListener("sia:photo-sync",e=>setPhoto(e.detail?.url||""));
 $("heroUrlSave").addEventListener("click",()=>{
  const value=$("heroImageUrl").value.trim(),url=validHttps(value);
  if(!url){say("https:// 로 시작하는 이미지 주소를 입력하세요.");return;}
- try{localStorage.setItem(photoKey,url);setPhoto(url);say("이 브라우저의 대표 사진을 변경했습니다.");}
+ try{localStorage.setItem(photoKey,url);setPhoto(url);say("대표 사진을 서버에 저장하는 중입니다.");publishPhoto(url);}
  catch{say("브라우저 저장 공간에 사진을 저장할 수 없습니다.");}
 });
 $("heroImageClear").addEventListener("click",()=>{
  try{localStorage.removeItem(photoKey);}catch{}
- $("heroImageUrl").value="";$("heroImageFile").value="";setPhoto("");say("대표 사진을 제거했습니다.");
+ $("heroImageUrl").value="";$("heroImageFile").value="";setPhoto("");say("대표 사진 제거를 서버에 반영하는 중입니다.");publishPhoto("");
 });
 $("heroImageFile").addEventListener("change",async e=>{
  const file=e.target.files?.[0];if(!file)return;
@@ -37,7 +40,7 @@ $("heroImageFile").addEventListener("change",async e=>{
   ctx.drawImage(img,0,0,canvas.width,canvas.height);
   const data=canvas.toDataURL("image/jpeg",.8);
   localStorage.setItem(photoKey,data);setPhoto(data);
-  $("heroImageUrl").value="";say("대표 사진을 적용했습니다. 다른 기기에서는 아직 보이지 않습니다.");
+  $("heroImageUrl").value="";say("대표 사진을 서버에 업로드하는 중입니다.");publishPhoto(data);
  }catch(err){say("사진 저장에 실패했습니다. 더 작은 이미지를 선택하거나 이미지 주소를 사용하세요.");}
  finally{URL.revokeObjectURL(temp);e.target.value="";}
 });
