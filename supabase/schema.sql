@@ -91,7 +91,9 @@ create table if not exists public.site_presence (
 );
 alter table public.site_presence enable row level security;
 create policy "allowed users read status" on public.site_presence for select to anon,authenticated
-  using (min_level <= (select public.sia_member_level()) or (select public.sia_is_admin()));
+  using ((select public.sia_is_admin()) or
+    (min_level <= (select public.sia_member_level()) and
+     coalesce((select min_level from public.page_visibility where slug='now'),10) <= (select public.sia_member_level())));
 create policy "admin writes status" on public.site_presence for all to authenticated
   using ((select public.sia_is_admin())) with check ((select public.sia_is_admin()));
 insert into public.site_presence(id) values(1) on conflict do nothing;
@@ -112,7 +114,9 @@ create table if not exists public.content_items (
 create index if not exists content_items_level_idx on public.content_items(min_level,category,created_at desc);
 alter table public.content_items enable row level security;
 create policy "allowed users read content" on public.content_items for select to anon,authenticated
-  using (min_level <= (select public.sia_member_level()) or (select public.sia_is_admin()));
+  using ((select public.sia_is_admin()) or
+    (min_level <= (select public.sia_member_level()) and
+     coalesce((select min_level from public.page_visibility where slug=(case when category in ('영화','드라마') then 'watch' else 'collections' end)),10) <= (select public.sia_member_level())));
 create policy "admin writes content" on public.content_items for all to authenticated
   using ((select public.sia_is_admin())) with check ((select public.sia_is_admin()));
 
@@ -127,7 +131,9 @@ create table if not exists public.practice_sessions (
 create index if not exists practice_sessions_level_day_idx on public.practice_sessions(min_level,practiced_on);
 alter table public.practice_sessions enable row level security;
 create policy "allowed users read sessions" on public.practice_sessions for select to anon,authenticated
-  using (min_level <= (select public.sia_member_level()) or (select public.sia_is_admin()));
+  using ((select public.sia_is_admin()) or
+    (min_level <= (select public.sia_member_level()) and
+     coalesce((select min_level from public.page_visibility where slug='practice'),10) <= (select public.sia_member_level())));
 create policy "admin writes sessions" on public.practice_sessions for all to authenticated
   using ((select public.sia_is_admin())) with check ((select public.sia_is_admin()));
 
@@ -138,7 +144,9 @@ create table if not exists public.contact_methods (
 );
 alter table public.contact_methods enable row level security;
 create policy "allowed users read contacts" on public.contact_methods for select to anon,authenticated
-  using (min_level <= (select public.sia_member_level()) or (select public.sia_is_admin()));
+  using ((select public.sia_is_admin()) or
+    (min_level <= (select public.sia_member_level()) and
+     coalesce((select min_level from public.page_visibility where slug='contact'),10) <= (select public.sia_member_level())));
 create policy "admin writes contacts" on public.contact_methods for all to authenticated
   using ((select public.sia_is_admin())) with check ((select public.sia_is_admin()));
 
@@ -154,7 +162,9 @@ create table if not exists public.live_location (
 );
 alter table public.live_location enable row level security;
 create policy "enabled location only for allowed users" on public.live_location for select to anon,authenticated
-  using ((select public.sia_is_admin()) or (enabled and min_level <= (select public.sia_member_level())));
+  using ((select public.sia_is_admin()) or
+  (enabled and min_level <= (select public.sia_member_level()) and
+   coalesce((select min_level from public.page_visibility where slug='location'),10) <= (select public.sia_member_level())));
 create policy "admin manages location" on public.live_location for all to authenticated
   using ((select public.sia_is_admin())) with check ((select public.sia_is_admin()));
 insert into public.live_location(id,enabled,min_level) values (1,false,4) on conflict do nothing;
