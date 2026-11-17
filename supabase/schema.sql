@@ -139,7 +139,7 @@ create policy "admin writes sessions" on public.practice_sessions for all to aut
   using ((select public.sia_is_admin())) with check ((select public.sia_is_admin()));
 
 create table if not exists public.contact_methods (
-  kind text primary key check (kind in ('phone','email')),
+  kind text primary key check (kind in ('phone','email','instagram','youtube','blog')),
   destination text not null,
   min_level integer not null default 2 check(min_level between 1 and 10)
 );
