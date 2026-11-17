@@ -10,6 +10,13 @@ $("localNotice").textContent="서버 연결 모드입니다. 회원 등급에 �
 window.SIA_SUPABASE=client;
 let user=null,admin=false,approved=false,memberLevel=1,loading=false,adminLoaded=false;
 const snapshotBackupKey="sia-space-local-precloud-backup-v2";
+function hasPendingAutosave(){
+ if(window.SIA_AUTOSAVE?.hasPending())return true;
+ try{
+  const pending=JSON.parse(localStorage.getItem("sia-space-pending-autosave-v1")||"[]");
+  return Array.isArray(pending)&&pending.length>0;
+ }catch{return false;}
+}
 function applyIdentity(){
  document.documentElement.classList.toggle("sia-admin",admin);
  document.documentElement.classList.toggle("sia-visitor",!admin);
@@ -165,7 +172,7 @@ $("cloudLoginForm").addEventListener("submit",async e=>{
   if(error)throw error;$("cloudPassword").value="";await who();
   status(admin?"관리자 로그인 성공 · 저장 시 서버 자동 반영됩니다.":"회원 로그인 성공 · 등급에 맞는 서버 기록을 불러오는 중입니다.");
   if(!admin)await loadCloud({force:true});
-  else if(!window.SIA_AUTOSAVE?.hasPending())await loadCloud({force:false});
+  else if(!hasPendingAutosave())await loadCloud({force:false});
  }catch(err){status("로그인 실패: "+String(err.message||err));}
  finally{btn.disabled=false;}
 });
@@ -209,7 +216,7 @@ window.SIA_TMDB_SEARCH=async(title,kind)=>{
  try{
   await who();
   if(!admin)await loadCloud({force:true});
-  else if(!window.SIA_AUTOSAVE?.hasPending())await loadCloud({force:false});
+  else if(!hasPendingAutosave())await loadCloud({force:false});
  }catch(err){status("서버 연결 오류: "+String(err.message||err));}
 })();
 })();
