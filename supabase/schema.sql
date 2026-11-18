@@ -114,6 +114,7 @@ create table if not exists public.content_items (
   category text not null check (category in ('사진','책','장소','프로젝트','음악','유튜브','개인 위키','타임라인','영화','드라마')),
   title text not null check(char_length(title) between 1 and 200),
   body text not null default '',
+  place_address text not null default '' check (char_length(place_address) <= 300),
   link_url text not null default '',
   poster_url text not null default '',
   poster_source text not null default '',
