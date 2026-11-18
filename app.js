@@ -130,9 +130,10 @@ function renderCards(target,items,watch){
   if(!watch&&x.kind==="유튜브"&&videoId(x.url)){const f=make("iframe");f.src="https://www.youtube-nocookie.com/embed/"+videoId(x.url);f.title=x.title;f.loading="lazy";f.allowFullscreen=true;card.append(f);}
   if(!watch&&x.kind==="사진"&&validUrl(x.url)){const box=make("div","entry-illustration"),img=make("img");img.src=x.url;img.loading="lazy";img.alt=x.title;box.append(img);card.append(box);}
   card.append(make("span","eyebrow",x.kind==="개인 위키"?"개인 기록":x.kind),make("h3","",x.title),make("p","record-meta",(x.date||new Date(x.created).toLocaleDateString("ko-KR"))+" · "+level(x.minLevel||1)));
+  if(!watch&&x.kind==="장소"&&x.placeAddress)card.append(make("p","record-address","📍 "+x.placeAddress));
   if(x.body)card.append(make("p","record-note",x.body));
   if(watch&&validUrl(x.posterSourceUrl)){const origin=make("a","poster-credit",x.posterSource==="tvmaze"?"TVmaze 작품 정보 ↗":x.posterSource==="itunes"?"Apple TV 작품 정보 ↗":"포스터 출처 ↗");origin.href=x.posterSourceUrl;origin.target="_blank";origin.rel="noopener noreferrer";card.append(origin);}
-  if(!watch&&validUrl(x.url)){const a=make("a","link-button","링크 열기 ↗");a.href=x.url;a.target="_blank";a.rel="noopener noreferrer";card.append(a);}
+  if(!watch&&validUrl(x.url)){const a=make("a","link-button",x.kind==="장소"?"지도에서 보기 ↗":"링크 열기 ↗");a.href=x.url;a.target="_blank";a.rel="noopener noreferrer";card.append(a);}
   const foot=make("footer"),edit=make("button","link-button owner-only","수정"),del=make("button","link-button owner-only","삭제");
   edit.onclick=()=>openForm(watch?"watch":"entries",x);
   del.onclick=()=>{
@@ -170,11 +171,28 @@ function openForm(kind,x,chosenSlug){
   const kindLabel=x?.kind||Object.keys(archiveMap).find(key=>archiveMap[key]===chosenSlug)||"사진";
   $("entryKind").value=kindLabel;
   $("entryUrl").value=x?.url||"";$("entryLevel").value=x?.minLevel||1;
+  $("entryPlaceAddress").value=x?.placeAddress||"";
+  $("entryPlaceAddressField").hidden=kindLabel!=="장소";
   $("entryBody").value=x?.body||"";
  }
  form.scrollIntoView({behavior:"smooth",block:"center"});
 }
 types.forEach(v=>$("entryKind").append(new Option(v==="개인 위키"?"개인 기록":v,v)));
+$("entryKind").addEventListener("change",()=>{
+ $("entryPlaceAddressField").hidden=$("entryKind").value!=="장소";
+});
+document.addEventListener("sia:naver-place-selected",event=>{
+ if(!window.SIA_IDENTITY?.admin)return;
+ const place=event.detail||{};
+ if(typeof place.title!=="string"||!place.title.trim())return;
+ openForm("entries",null,"places");
+ $("entryKind").value="장소";
+ $("entryTitle").value=place.title.trim().slice(0,120);
+ $("entryUrl").value=place.mapUrl||"";
+ $("entryPlaceAddress").value=String(place.address||"").slice(0,300);
+ $("entryPlaceAddressField").hidden=false;
+ $("entryBody").value="";
+});
 $("watchAddToggle").onclick=()=>openForm("watch");
 document.querySelectorAll("[data-archive-add]").forEach(button=>{
  button.onclick=()=>openForm("entries",null,button.dataset.archiveAdd);
@@ -194,7 +212,7 @@ $("watchForm").onsubmit=e=>{
 $("entryForm").onsubmit=e=>{
  e.preventDefault();const old=state.entries.find(x=>x.id===editingEntry),url=$("entryUrl").value.trim();
  if(url&&!validUrl(url))return toast("https:// 링크만 등록할 수 있습니다.");
- const entry={id:old?.id||id(),created:old?.created||Date.now(),title:$("entryTitle").value.trim(),kind:$("entryKind").value,url,minLevel:Number($("entryLevel").value),body:$("entryBody").value.trim()};
+ const entry={id:old?.id||id(),created:old?.created||Date.now(),title:$("entryTitle").value.trim(),kind:$("entryKind").value,url,minLevel:Number($("entryLevel").value),body:$("entryBody").value.trim(),placeAddress:$("entryKind").value==="장소"?$("entryPlaceAddress").value.trim():""};
  if(!entry.title)return;
  state.entries=state.entries.filter(x=>x.id!==editingEntry);state.entries.push(entry);
  save();$("entryForm").hidden=true;editingEntry=null;cards("entries");
