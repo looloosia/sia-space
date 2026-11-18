@@ -72,7 +72,7 @@ async function loadCloud({force=false}={}){
   const publicContent=content.map(x=>({
    id:x.id,title:x.title,kind:x.category,date:x.watched_on||"",body:x.body||"",url:x.link_url||"",
    posterUrl:x.poster_url||"",posterSource:x.poster_source||"",posterSourceUrl:x.poster_source_url||"",
-   minLevel:x.min_level,created:Date.parse(x.created_at)||Date.now()
+   minLevel:x.min_level,placeAddress:x.place_address||"",created:Date.parse(x.created_at)||Date.now()
   }));
   const s={...old,levels:levels.sort((a,b)=>a.level_number-b.level_number).map(l=>l.name),
    sectionLevels:{...old.sectionLevels,...pageRules},
@@ -152,7 +152,7 @@ async function pushCloud(){
   const items=[...s.watch,...s.entries].map(x=>({
    id:String(x.id),category:x.kind,title:x.title,body:x.body||"",link_url:x.url||"",poster_url:x.posterUrl||"",
    poster_source:x.posterSource||"",poster_source_url:x.posterSourceUrl||"",watched_on:x.date||null,
-   min_level:Number(x.minLevel||1),created_at:new Date(x.created||Date.now()).toISOString()
+   min_level:Number(x.minLevel||1),place_address:x.kind==="장소"?(x.placeAddress||""):"",created_at:new Date(x.created||Date.now()).toISOString()
   }));
   await replaceRows("content_items","id",items);
   const sessions=s.sessions.map(x=>({
