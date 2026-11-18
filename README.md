@@ -223,3 +223,48 @@ SQL 마이그레이션 파일: supabase/community-feature.sql — 실제 프로�
 - 서버 반영 성공/실패는 관리자 설정의 자동 저장 상태 및 알림에서 확인합니다. 오류는 로컬 대기열에 남고 **실패한 저장 재시도** 버튼으로 다시 보낼 수 있습니다.
 - 예외: JSON 백업 불러오기와 예전 로컬 기록 전체 복원은 자동 게시하지 않습니다. 전체 교체 위험이 있으므로 별도 **전체 로컬 기록 일괄 게시 (복원용)** 버튼과 확인 절차를 남겨 두었습니다.
 - JS 문법 및 DOM ID 연결 테스트, 항목별 API 작업 모의 테스트, DB 관리자 쓰기 권한 트랜잭션 테스트를 진행했습니다. 실제 휴대폰·PC에서 로그인부터 저장 후 다른 기기 반영까지의 브라우저 통합 테스트는 아직 하지 않았습니다.
+
+
+## 네이버 지도 장소 검색 및 등록 (2026-11-18)
+
+기존 장소 기록(해시 경로 `#places`)에 **네이버 지역 검색 → 장소 선택 → 이름·주소·지도 링크 자동 입력 → 공개 등급·메모 지정 → 저장** 기능을 추가했습니다.
+
+### 기본 사용법
+
+1. 관리자 계정으로 로그인하고 **기록 메뉴 > 장소**를 엽니다.
+2. **네이버 지도에서 장소 찾기** 영역에 검색어를 입력합니다.
+3. NAVER API HUB가 활성화되어 있다면 5개 이내의 장소 검색 결과가 표시됩니다. **이 장소로 기록하기**를 누르면 기존 장소 등록 폼에 장소명·주소·지도 검색 링크가 자동 채워집니다.
+4. 공개 등급과 메모를 정하고 저장하면 **기존 Supabase 자동 저장** 로직으로 해당 기록이 즉시 게시됩니다. 주소는 `content_items.place_address`, 네이버 지도 링크는 `link_url`에 저장합니다.
+5. 장소 카드에는 주소와 **지도에서 보기** 링크가 표시됩니다. 기존 장소 기록을 수정/삭제할 수 있고, 메뉴 공개 등급 및 항목별 등급 정책도 그대로 적용됩니다.
+
+위치 자동 수집, 현 위치 추적, 방문 위치 공유는 구현하지 않았습니다. 사용자가 직접 선택한 장소만 기록합니다.
+
+### NAVER API HUB 최초 설정 — 검색 결과 표시를 위해 필수
+
+**2026년부터 네이버 지역 검색 API는 NAVER API HUB에 제공되므로, 예전 developers.naver.com Client ID/Secret으로는 연결할 수 없습니다.**
+
+1. 네이버 클라우드 플랫폼에 접속해 **NAVER API HUB** 이용 신청 및 **NAVER 검색 / 지역 검색** 이용 가능 Application을 등록합니다. Client ID / Client Secret을 발급받습니다.
+   - 소개/신청: https://guide.ncloud-docs.com/docs/apihub-procedure
+   - 공식 지역 검색 API: https://api.ncloud-docs.com/docs/naver-api-hub-search-local
+   - API HUB는 종량제이므로 신청 전 요금·사용량 한도를 확인하십시오.
+2. Supabase 대시보드 `https://supabase.com/dashboard/project/gjydiqwtwmzwtdnqiytu/functions`의 **Secrets / 환경 변수**에서 아래 **정확한 이름**으로 등록합니다.
+   - `NAVER_API_HUB_CLIENT_ID` = 발급된 Client ID
+   - `NAVER_API_HUB_CLIENT_SECRET` = 발급된 Client Secret
+3. 저장 후 홈페이지 `#places`에서 검색을 실행합니다. 검색 API 프록시 **`naver-place-search`**는 이미 Supabase에 배포되어 있으므로 위 두 환경 변수가 있으면 호출할 수 있도록 준비되어 있습니다.
+
+**보안:** 네이버 인증 키를 GitHub `site-config.js`, 정적 자바스크립트, 브라우저 코드에 절대 기록하지 않습니다. 서버 Edge Function이 NAVER API HUB를 호출하고 결과만 전달합니다. 사용자 세션을 서버에서 검증하고 **사이트 관리자만 검색 API를 호출할 수 있습니다.** Edge Function은 Supabase publishable key 구조에 맞게 자체 인증 검사를 수행합니다.
+
+### 키를 등록하지 않아도 가능한 방법
+
+- **네이버 지도 열기**에서 장소를 검색하고 지도에서 **공유 링크**를 복사합니다.
+- 홈페이지의 **네이버 지도에서 복사한 링크로 등록하기**를 펼치고 장소명과 네이버 지도/플레이스 공유 URL을 붙여넣습니다.
+- 장소 등록 폼에서 필요하면 주소를 직접 입력하고 공개 등급·메모를 설정한 후 저장합니다.
+- 현재 허용하는 공유 링크 호스트는 `map.naver.com`, `naver.me`, `place.naver.com`, `m.place.naver.com`입니다. 링크가 아닌 다른 주소는 일반 기록의 관련 링크 필드에서 여전히 직접 등록할 수 있습니다.
+
+### 데이터베이스 및 배포
+
+- 운영 DB에 `supabase/place-address-upgrade.sql`을 적용했으며, 신규 프로젝트 초기 스키마인 `supabase/schema.sql`에도 같은 필드를 반영했습니다.
+- NAVER API HUB 프록시 소스: `supabase/functions/naver-place-search/index.ts`
+- 관리자 검색 UI 소스: `naver-places.js`; 레코드 저장/표시는 `app.js`, `backend.js`, `autosave.js`에서 처리
+- 보안: 기존 `content_items` RLS로 조회·편집 범위를 유지합니다. 테스트에서는 관리자 인증 컨텍스트로 장소명·주소·지도 링크 저장이 정상 처리됐고 모든 변경은 롤백했습니다.
+- **남은 작업:** 네이버 클라우드의 인증 키 발급 및 Supabase Secrets 등록은 프로젝트 소유자가 완료해야 합니다. 아직 인증 키가 없으면 홈페이지 내 API 검색 결과는 나오지 않으며, 공유 링크 직접 등록 기능은 사용할 수 있습니다.
