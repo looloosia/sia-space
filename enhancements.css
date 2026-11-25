@@ -465,3 +465,23 @@ html.cloud-authorizing #settings{visibility:visible!important}
  .records-page .records-add-bar .btn{width:100%}
  .records-naver-tools summary{padding:14px}
 }
+
+
+/* Cross-device records: visible sync diagnostics and user-controlled refresh. */
+.cloud-refresh-row{
+ display:flex;align-items:center;justify-content:space-between;
+ flex-wrap:wrap;gap:10px;margin:0 0 18px;
+ padding:11px 14px;background:#f7f9fc;border:1px solid #e0e8f1;
+ border-radius:7px;
+}
+.cloud-refresh-status{font-size:11px;color:#607184;line-height:1.7;overflow-wrap:anywhere}
+.cloud-refresh-status[data-sync-state="success"]{color:#326e57}
+.cloud-refresh-status[data-sync-state="error"]{color:#b14242;font-weight:600}
+.cloud-refresh-status[data-sync-state="pending"]{color:#986b2f}
+.cloud-refresh-row .btn{font-size:11px;white-space:nowrap}
+#deviceRecordsBackupStatus{line-height:1.7}
+@media(max-width:760px){
+ .cloud-refresh-row{align-items:stretch;padding:10px 12px;gap:9px}
+ .cloud-refresh-status{width:100%}
+ .cloud-refresh-row .btn{width:100%}
+}
