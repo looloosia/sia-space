@@ -8,7 +8,7 @@ if(!/^https:\/\/[a-z0-9.-]+\.supabase\.co\/?$/i.test(url)||!window.supabase?.cre
 const client=window.supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 $("localNotice").textContent="서버 연결 모드입니다. 회원 등급에 따른 서버 조회는 활성화할 수 있지만, 관리자의 변경사항은 저장 시 서버에 자동 반영됩니다.";
 window.SIA_SUPABASE=client;
-let user=null,admin=false,approved=false,memberLevel=1,loading=false,adminLoaded=false;
+let user=null,admin=false,approved=false,memberLevel=1,loading=false,adminLoaded=false,lastCloudSuccess=0;
 const snapshotBackupKey="sia-space-local-precloud-backup-v2";
 const unsyncedBackupKey="sia-space-device-only-records-v1";
 function deviceBackup(){
@@ -152,6 +152,7 @@ async function loadCloud({force=false}={}){
   document.documentElement.classList.add("sia-public-loaded");
   document.documentElement.classList.remove("cloud-authorizing");
   if(admin)adminLoaded=true;
+  lastCloudSuccess=Date.now();
   view();
   const serverCount=s.watch.length+s.entries.length;
   const youtubeCount=s.entries.filter(x=>x.kind==="유튜브").length;
@@ -303,6 +304,14 @@ window.SIA_SYNC={
  getDeviceBackup:deviceBackup,
  hasPending:hasPendingAutosave
 };
+function refreshWhenReturning(){
+ if(document.hidden||loading||!window.SIA_MENU_READY||hasPendingAutosave())return;
+ if(Date.now()-lastCloudSuccess<45000)return;
+ if(["entryForm","watchForm"].some(id=>{const el=$(id);return el&&!el.hidden;}))return;
+ loadCloud({force:false});
+}
+window.addEventListener("focus",refreshWhenReturning);
+document.addEventListener("visibilitychange",refreshWhenReturning);
 window.SIA_TMDB_SEARCH=async(title,kind)=>{
  if(!admin)throw Error("TMDB 검색은 관리자 로그인 후 사용할 수 있습니다.");
  const {data,error}=await client.functions.invoke("media-search",{body:{title,kind}});
