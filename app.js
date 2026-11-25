@@ -119,7 +119,6 @@ const previousRecordFilters={
 function recordsFilterFromHash(){
  const hash=decodeURIComponent(location.hash.slice(1)).toLowerCase();
  if(Object.hasOwn(previousRecordFilters,hash))$("recordsFilter").value=previousRecordFilters[hash];
- else if(hash==="records")$("recordsFilter").value="all";
 }
 function cards(_kind){
  const filter=$("recordsFilter").value||"all";
@@ -160,7 +159,6 @@ function renderCards(target,items){
 }
 function validUrl(v){try{return new URL(v).protocol==="https:";}catch{return false;}}
 function videoId(v){try{const u=new URL(v);if(u.protocol!=="https:")return null;let val=null;if(["youtube.com","www.youtube.com","m.youtube.com"].includes(u.hostname))val=u.searchParams.get("v");else if(u.hostname==="youtu.be")val=u.pathname.split("/")[1];return /^[a-zA-Z0-9_-]{11}$/.test(val)?val:null;}catch{return null;}}
-function categories(){cards("entries");}
 function categories(){cards();}
 function openForm(kind,x,chosenCategory){
  const watch=kind==="watch",form=$(watch?"watchForm":"entryForm");
