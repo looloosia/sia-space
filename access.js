@@ -3,12 +3,11 @@
 
 const $ = id => document.getElementById(id);
 const ROUTES = {
- home:"홈",now:"현재 상태",practice:"시간기록",watch:"영화·드라마",
- photos:"사진",books:"책",places:"장소",projects:"프로젝트",music:"음악",
- youtube:"유튜브",wiki:"개인 기록",timeline:"타임라인",
- community:"소통",contact:"연락처",settings:"로그인·회원가입",admin:"관리자 설정"
+ home:"홈",now:"현재 상태",practice:"시간기록",records:"기록들",
+ community:"소통",contact:"소셜·이메일",settings:"로그인·회원가입",admin:"관리자 설정"
 };
-const ARCHIVES = new Set(["watch","photos","books","places","projects","music","youtube","wiki","timeline"]);
+const RECORD_LEGACY_ROUTES=new Set(["watch","photos","books","places","projects","music","youtube","wiki","timeline","collections"]);
+
 const pages = [...document.querySelectorAll(".route-page")];
 const phoneQuery = window.matchMedia("(max-width: 760px)");
 let nextAfterLogin = null;
@@ -17,8 +16,8 @@ let previousMobile = phoneQuery.matches;
 
 function selectedRoute() {
  const input = decodeURIComponent(location.hash.slice(1)).toLowerCase();
- if(input==="collections")return "photos";
  if(input==="about")return "home";
+ if(RECORD_LEGACY_ROUTES.has(input))return "records";
  return Object.hasOwn(ROUTES,input)?input:"home";
 }
 function requireLevel(key) {
@@ -42,11 +41,7 @@ function activate(slug) {
   if(active)a.setAttribute("aria-current","page");
   else a.removeAttribute("aria-current");
  });
- const summary=document.querySelector("#archiveNav summary");
- if(summary)summary.classList.toggle("active",ARCHIVES.has(slug));
- // Archive sub-menu remains open only while selecting from it.
- const archive=$("archiveNav");
- if(archive)archive.open=false;
+
 }
 function pageFor(slug){return $(slug);}
 function showDesktop(target) {
