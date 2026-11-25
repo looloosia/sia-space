@@ -525,3 +525,49 @@ html.cloud-authorizing #settings{visibility:visible!important}
  .record-photo-preview{align-items:flex-start}
  .record-photo-preview img{width:90px;max-height:120px}
 }
+
+
+/* Records image aspect-ratio fix (photo + YouTube in the same card) */
+/* app.css fixed .entry-illustration at 140px with overflow:hidden,
+   which cropped photos (including photos attached to a YouTube record). */
+.records-page .entry-card .entry-illustration {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f2f4f7;
+  border-radius: 5px;
+}
+.records-page .entry-card .entry-illustration img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+  object-position: center;
+}
+.records-page .entry-card .record-uploaded-image {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+}
+.records-page .entry-card .record-uploaded-image img {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+}
+.records-page .entry-card iframe {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: 5px;
+}
