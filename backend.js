@@ -32,16 +32,20 @@ function archiveDeviceOnlyRecords(old,remote){
  const prior=deviceBackup(),merged={},counts={};
  for(const type of ["entries","watch","sessions"]){
   const remoteIDs=new Set((remote[type]||[]).map(x=>String(x.id)));
-  const past=new Map((prior[type]||[]).filter(x=>x?.id).map(x=>[String(x.id),x]));
+  const past=new Map((prior[type]||[]).filter(x=>x?.id&&!remoteIDs.has(String(x.id))).map(x=>[String(x.id),x]));
+  const priorUnique=past.size;
   for(const item of (old[type]||[])){
    if(item?.id&&!remoteIDs.has(String(item.id))&&!past.has(String(item.id)))past.set(String(item.id),item);
   }
   merged[type]=[...past.values()];
-  counts[type]=merged[type].length-(prior[type]||[]).length;
+  counts[type]=past.size-priorUnique;
  }
- if(Object.values(counts).some(n=>n>0)){
-  try{localStorage.setItem(unsyncedBackupKey,JSON.stringify(merged));}
-  catch(error){
+ if(JSON.stringify(merged)!==JSON.stringify(prior)){
+  try{
+   const total=merged.entries.length+merged.watch.length+merged.sessions.length;
+   if(total)localStorage.setItem(unsyncedBackupKey,JSON.stringify(merged));
+   else localStorage.removeItem(unsyncedBackupKey);
+  }catch(error){
    console.error("기기 전용 기록 백업 실패",error);
    throw Error("기기 기록 백업에 실패해 서버 자료를 덮어쓰지 않았습니다. 브라우저 저장 공간을 확인해 주세요.");
   }
@@ -257,12 +261,13 @@ $("restoreLocalDraft").onclick=()=>{
  if(!admin)return;
  const raw=localStorage.getItem(snapshotBackupKey);
  if(!raw){status("이전에 보관된 로컬 기록이 없습니다.");return;}
- if(!confirm("서버 연결 이전의 로컬 기록을 현재 편집 화면에 복구할까요? 서버에는 '서버에 게시'를 누르기 전까지 반영되지 않습니다."))return;
+ if(!confirm("서버에 아직 없는 예전 로컬 기록만 추가할까요? 이미 서버에 있는 기록은 덮어쓰거나 삭제하지 않습니다."))return;
  try{
   const data=JSON.parse(raw);
   if(data.version!==2||!Array.isArray(data.entries)||!Array.isArray(data.watch)||!Array.isArray(data.sessions))throw Error("백업 데이터 형식이 올바르지 않습니다.");
-  window.SIA_BRIDGE.hydrate(data);
-  status("예전 로컬 기록을 복구했습니다. 다른 기록과 충돌하지 않도록 확인한 뒤 게시하세요.");
+  const restored=window.SIA_BRIDGE.mergeLocalRecords?.(data);
+  if(!restored)throw Error("기존 로컬 기록을 복구할 수 없습니다.");
+  status("예전 로컬 기록 "+(restored.entries+restored.watch+restored.sessions)+"개를 안전하게 합치고 서버 저장을 요청했습니다.");
  }catch(e){status("복구 실패: "+String(e.message||e));}
 };
 $("cloudLoad").onclick=async()=>{if(!confirm("현재 브라우저 데이터를 서버 내용으로 바꿉니다. 저장하지 않은 기록이 있으면 JSON 백업 후 진행하세요. 계속할까요?"))return;await loadCloud({force:true});};
