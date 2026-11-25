@@ -283,7 +283,27 @@ window.SIA_BRIDGE={
  delete state.locationLevel;if(state.sectionLevels)delete state.sectionLevels.location;
  save({localOnly:true});settings();timerRender();calendar();categories();cards("watch");
  document.dispatchEvent(new Event("sia:menu-data-updated"));
-}
+},
+ mergeLocalRecords:(backup)=>{
+  if(!window.SIA_IDENTITY?.admin)return null;
+  const counts={entries:0,watch:0,sessions:0};
+  for(const type of Object.keys(counts)){
+   const local=Array.isArray(backup?.[type])?backup[type]:[];
+   const have=new Set(state[type].map(x=>String(x.id)));
+   for(const item of local){
+    if(!item||typeof item.id!=="string"||!item.id||have.has(String(item.id)))continue;
+    if(type!=="sessions"&&(!item.title||!item.kind))continue;
+    if(type==="sessions"&&(!item.kind||!item.date||!Number.isFinite(Number(item.elapsedMs))))continue;
+    state[type].push(item);have.add(String(item.id));counts[type]++;
+   }
+  }
+  if(Object.values(counts).some(Boolean)){
+   save();
+   calendar();renderSummary();cards();
+   document.dispatchEvent(new Event("sia:menu-data-updated"));
+  }
+  return counts;
+ }
 };
 settings();timerRender();calendar();categories();cards("watch");
 })();
