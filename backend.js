@@ -10,6 +10,45 @@ $("localNotice").textContent="서버 연결 모드입니다. 회원 등급에 �
 window.SIA_SUPABASE=client;
 let user=null,admin=false,approved=false,memberLevel=1,loading=false,adminLoaded=false;
 const snapshotBackupKey="sia-space-local-precloud-backup-v2";
+const unsyncedBackupKey="sia-space-device-only-records-v1";
+function deviceBackup(){
+ try {
+  const raw=localStorage.getItem(unsyncedBackupKey);
+  const parsed=raw?JSON.parse(raw):null;
+  if(!parsed||typeof parsed!=="object")return {entries:[],watch:[],sessions:[]};
+  return {entries:Array.isArray(parsed.entries)?parsed.entries:[],watch:Array.isArray(parsed.watch)?parsed.watch:[],sessions:Array.isArray(parsed.sessions)?parsed.sessions:[]};
+ }catch{return {entries:[],watch:[],sessions:[]};}
+}
+function showDeviceBackup(){
+ const backup=deviceBackup(),count=backup.entries.length+backup.watch.length+backup.sessions.length;
+ const button=$("restoreDeviceRecords");
+ if(button)button.hidden=!admin||!count;
+ const summary=$("deviceRecordsBackupStatus");
+ if(summary)summary.textContent=count?"이 기기에만 있었던 기록 "+count+"개가 별도로 보관돼 있습니다. 필요한 기록만 확인 후 서버에 합칠 수 있습니다.":"이 기기에서 별도로 보관된 기록이 없습니다.";
+ return count;
+}
+function archiveDeviceOnlyRecords(old,remote){
+ if(!admin)return 0;
+ const prior=deviceBackup(),merged={},counts={};
+ for(const type of ["entries","watch","sessions"]){
+  const remoteIDs=new Set((remote[type]||[]).map(x=>String(x.id)));
+  const past=new Map((prior[type]||[]).filter(x=>x?.id).map(x=>[String(x.id),x]));
+  for(const item of (old[type]||[])){
+   if(item?.id&&!remoteIDs.has(String(item.id))&&!past.has(String(item.id)))past.set(String(item.id),item);
+  }
+  merged[type]=[...past.values()];
+  counts[type]=merged[type].length-(prior[type]||[]).length;
+ }
+ if(Object.values(counts).some(n=>n>0)){
+  try{localStorage.setItem(unsyncedBackupKey,JSON.stringify(merged));}
+  catch(error){
+   console.error("기기 전용 기록 백업 실패",error);
+   throw Error("기기 기록 백업에 실패해 서버 자료를 덮어쓰지 않았습니다. 브라우저 저장 공간을 확인해 주세요.");
+  }
+ }
+ showDeviceBackup();
+ return Object.values(counts).reduce((a,b)=>a+Math.max(0,b),0);
+}
 function hasPendingAutosave(){
  if(window.SIA_AUTOSAVE?.hasPending())return true;
  try{
@@ -22,6 +61,7 @@ function applyIdentity(){
  document.documentElement.classList.toggle("sia-visitor",!admin);
  $("settingsNav").textContent=admin?"사이트 설정":user?"내 계정":"로그인·회원가입";
  $("restoreLocalDraft").hidden=!(admin&&localStorage.getItem(snapshotBackupKey));
+ showDeviceBackup();
 }
 const loadingButton=(id,isLoading)=>{$(id).disabled=isLoading;};
 async function query(q){const {data,error}=await q;if(error)throw error;return data;}
@@ -58,12 +98,23 @@ function reconcileVisibility(visibility){
  window.SIA_MENU_READY=true;
  document.dispatchEvent(new CustomEvent("sia:menu-rules",{detail:{visibility:window.SIA_MENU_RULES}}));
 }
+function updateSyncStatus(message,state="info"){
+ for(const id of ["recordsSyncStatus","practiceSyncStatus"]){
+  const element=$(id);
+  if(element){element.textContent=message;element.dataset.syncState=state;}
+ }
+}
 async function loadCloud({force=false}={}){
+ updateSyncStatus("서버 자료를 불러오는 중입니다…","loading");
  if(loading)return;loading=true;status("서버 자료를 불러오는 중입니다.");
  try{
   const old=window.SIA_BRIDGE.snapshot();
-  const hasLocal=Boolean(old.entries.length||old.watch.length||old.sessions.length||old.contact.email);
-  if(hasLocal&&!force&&admin){status("이 브라우저에 기존 기록이 있어 자동 덮어쓰기를 건너뛰었습니다. 관리자 로그인 후 백업하고 서버 기록을 불러오세요.");return;}
+  // Existing local records are not evidence of unsaved changes. Always fetch the
+  // authoritative server snapshot, except while explicit autosave operations are pending.
+  if(admin&&hasPendingAutosave()){
+    const message="이 기기의 서버 자동 저장이 남아 있습니다. 저장이 끝나면 서버 자료를 다시 불러옵니다.";
+    status(message);updateSyncStatus(message,"pending");return;
+  }
   const [levels,pages,brand,presence,content,sessions,contacts]=await Promise.all([
    rows("member_levels"),rows("page_visibility"),rows("site_branding"),rows("site_presence"),rows("content_items"),rows("practice_sessions"),rows("contact_methods")
   ]);
@@ -89,6 +140,7 @@ async function loadCloud({force=false}={}){
    contact:{email:contacts.find(x=>x.kind==="email")?.destination||""}
   };
   if(s.levels.length<2)s.levels=old.levels;
+  const archived=archiveDeviceOnlyRecords(old,s);
   window.SIA_BRIDGE.hydrate(s);
   try{if(branding.hero_image_url)window.localStorage.setItem("sia-space-hero-photo-v1",branding.hero_image_url);else window.localStorage.removeItem("sia-space-hero-photo-v1");}catch{}
   document.dispatchEvent(new CustomEvent("sia:photo-sync",{detail:{url:branding.hero_image_url||""}}));
@@ -96,8 +148,17 @@ async function loadCloud({force=false}={}){
   document.documentElement.classList.add("sia-public-loaded");
   document.documentElement.classList.remove("cloud-authorizing");
   if(admin)adminLoaded=true;
-  view();status((admin?"관리자":"방문자")+" · 서버 기록을 불러왔습니다. "+(admin?"변경사항은 저장할 때 자동으로 반영됩니다.":"")); 
- }catch(err){status("서버 불러오기 실패: "+String(err.message||err));document.dispatchEvent(new Event("sia:menu-error"));}
+  view();
+  const serverCount=s.watch.length+s.entries.length;
+  const youtubeCount=s.entries.filter(x=>x.kind==="유튜브").length;
+  const summary="서버 갱신 완료 · 기록 "+serverCount+"개 (유튜브 "+youtubeCount+"개) · 시간기록 "+s.sessions.length+"개";
+  updateSyncStatus(summary+(archived?" · 기기 전용 "+archived+"개 별도 보관":""),"success");
+  status((admin?"관리자":"방문자")+" · "+summary);
+ }catch(err){
+  const message="서버 불러오기 실패: "+String(err.message||err);
+  status(message);updateSyncStatus(message,"error");
+  document.dispatchEvent(new Event("sia:menu-error"));
+ }
  finally{loading=false;}
 }
 async function upsert(table,items){
@@ -206,6 +267,37 @@ $("restoreLocalDraft").onclick=()=>{
 };
 $("cloudLoad").onclick=async()=>{if(!confirm("현재 브라우저 데이터를 서버 내용으로 바꿉니다. 저장하지 않은 기록이 있으면 JSON 백업 후 진행하세요. 계속할까요?"))return;await loadCloud({force:true});};
 $("cloudPublish").onclick=pushCloud;
+for(const id of ["refreshRecordsFromServer","refreshPracticeFromServer"]){
+ const button=$(id);
+ if(button)button.addEventListener("click",async()=>{
+  if(hasPendingAutosave()){
+   updateSyncStatus("서버에 저장 중인 작업을 먼저 완료해 주세요.","pending");
+   return;
+  }
+  button.disabled=true;
+  try{await loadCloud({force:true});}
+  finally{button.disabled=false;}
+ });
+}
+$("restoreDeviceRecords")?.addEventListener("click",()=>{
+ if(!admin)return;
+ const backup=deviceBackup();
+ const count=backup.entries.length+backup.watch.length+backup.sessions.length;
+ if(!count)return;
+ if(!confirm("이 기기에만 남아 있던 기록 "+count+"개를 서버 기록에 추가할까요? 기존 서버 기록은 삭제하지 않고, 이미 있는 ID는 건너뜁니다."))return;
+ const result=window.SIA_BRIDGE.mergeLocalRecords?.(backup);
+ if(!result)return status("기기 전용 기록을 복원할 수 없습니다.");
+ const merged=result.entries+result.watch+result.sessions;
+ status("누락됐던 기기 전용 기록 "+merged+"개의 서버 저장을 요청했습니다. 관리자 설정의 자동 저장 상태를 확인해 주세요.");
+}); 
+document.addEventListener("sia:autosave-drained",()=>{
+ if(admin&&!adminLoaded&&!loading)loadCloud({force:true});
+});
+window.SIA_SYNC={
+ refresh:()=>loadCloud({force:true}),
+ getDeviceBackup:deviceBackup,
+ hasPending:hasPendingAutosave
+};
 window.SIA_TMDB_SEARCH=async(title,kind)=>{
  if(!admin)throw Error("TMDB 검색은 관리자 로그인 후 사용할 수 있습니다.");
  const {data,error}=await client.functions.invoke("media-search",{body:{title,kind}});
