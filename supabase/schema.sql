@@ -72,9 +72,7 @@ alter table public.page_visibility enable row level security;
 create policy "anyone can read page visibility labels" on public.page_visibility for select to anon,authenticated using (true);
 create policy "admin controls page visibility" on public.page_visibility for all to authenticated using ((select app_private.sia_is_admin())) with check ((select app_private.sia_is_admin()));
 insert into public.page_visibility (slug,min_level) values
- ('home',1),('now',1),('practice',1),('watch',1),
- ('photos',1),('books',1),('places',1),('projects',1),
- ('music',1),('youtube',1),('wiki',1),('timeline',1),
+ ('home',1),('now',1),('practice',1),('records',1),
  ('community',1),('contact',2)
 on conflict do nothing;
 
@@ -128,13 +126,8 @@ alter table public.content_items enable row level security;
 create policy "allowed users read content" on public.content_items for select to anon,authenticated
   using ((select app_private.sia_is_admin()) or
     (min_level <= (select app_private.sia_member_level()) and
-     coalesce((select min_level from public.page_visibility where slug=(case category
-       when '영화' then 'watch' when '드라마' then 'watch'
-       when '사진' then 'photos' when '책' then 'books'
-       when '장소' then 'places' when '프로젝트' then 'projects'
-       when '음악' then 'music' when '유튜브' then 'youtube'
-       when '개인 위키' then 'wiki' when '타임라인' then 'timeline'
-       else 'unknown' end)),10) <= (select app_private.sia_member_level())));
+     coalesce((select min_level from public.page_visibility where slug='records'),10)
+       <= (select app_private.sia_member_level())));
 create policy "admin writes content" on public.content_items for all to authenticated
   using ((select app_private.sia_is_admin())) with check ((select app_private.sia_is_admin()));
 
