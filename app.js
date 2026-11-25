@@ -170,7 +170,8 @@ function openForm(kind,x,chosenCategory){
   $("watchFormTitle").textContent=x?"감상 기록 수정":"감상 기록 추가";
   $("watchTitle").value=x?.title||"";
   $("watchKind").value=x?.kind||chosenCategory||"영화";
-  $("watchDate").value=x?.date||today();$("watchLevel").value=x?.minLevel||1;
+  $("watchDate").value=x?.date||today();
+  $("watchLevel").value=x?.minLevel||Math.max(1,Number(state.sectionLevels.records||1),Number(state.sectionLevels.watch||1));
   $("watchNote").value=x?.body||"";$("watchPoster").value=x?.posterUrl||"";
   $("watchPosterSource").value=x?.posterSource||"";$("watchPosterSourceUrl").value=x?.posterSourceUrl||"";
   $("posterResults").replaceChildren();
@@ -180,7 +181,9 @@ function openForm(kind,x,chosenCategory){
   $("entryTitle").value=x?.title||"";
   const kindLabel=x?.kind||chosenCategory||"사진";
   $("entryKind").value=kindLabel;
-  $("entryUrl").value=x?.url||"";$("entryLevel").value=x?.minLevel||1;
+  $("entryUrl").value=x?.url||"";
+  const oldSection=archiveMap[kindLabel];
+  $("entryLevel").value=x?.minLevel||Math.max(1,Number(state.sectionLevels.records||1),Number(state.sectionLevels[oldSection]||1));
   $("entryPlaceAddress").value=x?.placeAddress||"";
   $("entryPlaceAddressField").hidden=kindLabel!=="장소";
   $("entryBody").value=x?.body||"";
@@ -189,7 +192,9 @@ function openForm(kind,x,chosenCategory){
 }
 types.forEach(v=>$("entryKind").append(new Option(v==="개인 위키"?"개인 기록":v,v)));
 $("entryKind").addEventListener("change",()=>{
- $("entryPlaceAddressField").hidden=$("entryKind").value!=="장소";
+ const type=$("entryKind").value;
+ $("entryPlaceAddressField").hidden=type!=="장소";
+ if(!editingEntry)$("entryLevel").value=String(Math.max(1,Number(state.sectionLevels.records||1),Number(state.sectionLevels[archiveMap[type]]||1)));
 });
 document.addEventListener("sia:naver-place-selected",event=>{
  if(!window.SIA_IDENTITY?.admin)return;
@@ -212,6 +217,9 @@ $("recordsFilter").onchange=()=>{
  cards();
 };
 $("recordsSearch").oninput=()=>cards();
+document.querySelector('#mainNav a[href="#records"]')?.addEventListener("click",()=>{
+ $("recordsFilter").value="all";cards();
+});
 window.addEventListener("hashchange",()=>{recordsFilterFromHash();cards();});
 recordsFilterFromHash();
 $("watchCancel").onclick=()=>{$("watchForm").hidden=true;editingWatch=null;};
