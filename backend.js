@@ -280,6 +280,11 @@ for(const id of ["refreshRecordsFromServer","refreshPracticeFromServer"]){
    updateSyncStatus("서버에 저장 중인 작업을 먼저 완료해 주세요.","pending");
    return;
   }
+  if(id==="refreshRecordsFromServer"){
+   const filter=$("recordsFilter"),search=$("recordsSearch");
+   if(filter)filter.value="all";
+   if(search)search.value="";
+  }
   button.disabled=true;
   try{await loadCloud({force:true});}
   finally{button.disabled=false;}
