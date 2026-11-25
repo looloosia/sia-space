@@ -485,3 +485,43 @@ html.cloud-authorizing #settings{visibility:visible!important}
  .cloud-refresh-status{width:100%}
  .cloud-refresh-row .btn{width:100%}
 }
+
+
+/* Mobile photo library uploads — browser file chooser, not camera-only capture */
+.record-photo-chooser{
+ display:flex;flex-direction:column;align-items:stretch;gap:9px;
+ padding:15px;border:1px solid #dce5ef;border-radius:8px;background:#f7fafd;
+}
+.record-photo-chooser>label{
+ font-weight:650;color:#385572;font-size:12px;
+}
+.record-photo-chooser input[type=file]{
+ display:block;width:100%;min-width:0;
+ background:#fff;color:#45586c;border:1px solid #cdd9e7;
+ border-radius:6px;padding:10px;line-height:1.7;font:inherit;font-size:12px;
+}
+.record-photo-chooser input[type=file]::file-selector-button{
+ background:#eaf2fa;border:1px solid #c8daed;border-radius:4px;
+ padding:7px 12px;color:#2b5e90;font:inherit;font-weight:600;margin-right:12px;cursor:pointer;
+}
+.record-photo-chooser .section-note{font-size:11px;line-height:1.75;margin:0;color:#63788e}
+.record-photo-preview{
+ display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+ padding:11px;background:#fff;border:1px solid #d9e4ee;border-radius:7px;
+}
+.record-photo-preview[hidden]{display:none!important}
+.record-photo-preview img{
+ width:120px;max-height:140px;object-fit:contain;border-radius:5px;
+ background:#f6f8fb;
+}
+.record-photo-preview span{font-size:11px;color:#62748a;overflow-wrap:anywhere;flex:1}
+.record-photo-actions{display:flex;gap:10px}
+#recordPhotoStatus.is-error{color:#a64141;font-weight:600}
+.record-uploaded-image{min-height:120px;display:flex;align-items:center;justify-content:center}
+.record-uploaded-image img{display:block;width:100%;max-height:360px;object-fit:contain}
+.record-photo-error{color:#8f4e4e;font-size:12px;padding:20px;text-align:center}
+@media(max-width:760px){
+ .record-photo-chooser{padding:12px}
+ .record-photo-preview{align-items:flex-start}
+ .record-photo-preview img{width:90px;max-height:120px}
+}
