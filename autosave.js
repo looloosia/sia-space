@@ -84,6 +84,7 @@ function plan(before,after){
    poster_source:item.posterSource||"",poster_source_url:item.posterSourceUrl||"",
    watched_on:item.date||null,min_level:Number(item.minLevel||1),
    place_address:item.kind==="장소"?(item.placeAddress||""):"",
+   image_path:item.imagePath||"",
    created_at:safeDate(item.created)
   }});
  }
