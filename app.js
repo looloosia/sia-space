@@ -140,7 +140,11 @@ function renderCards(target,items){
   const card=make("article","entry-card");
   if(watch&&validUrl(x.posterUrl)){const cover=make("div","poster-cover"),img=make("img");img.src=x.posterUrl;img.alt=x.title+" 포스터";img.loading="lazy";cover.append(img);card.append(cover);}
   if(!watch&&x.kind==="유튜브"&&videoId(x.url)){const f=make("iframe");f.src="https://www.youtube-nocookie.com/embed/"+videoId(x.url);f.title=x.title;f.loading="lazy";f.allowFullscreen=true;card.append(f);}
-  if(!watch&&x.kind==="사진"&&validUrl(x.url)){const box=make("div","entry-illustration"),img=make("img");img.src=x.url;img.loading="lazy";img.alt=x.title;box.append(img);card.append(box);}
+  if(!watch&&x.imagePath&&window.SIA_RECORD_PHOTOS){
+    window.SIA_RECORD_PHOTOS.mountCard(card,x.imagePath,x.title);
+  }else if(!watch&&x.kind==="사진"&&validUrl(x.url)){
+    const box=make("div","entry-illustration"),img=make("img");img.src=x.url;img.loading="lazy";img.alt=x.title;box.append(img);card.append(box);
+  }
   card.append(make("span","eyebrow",x.kind==="개인 위키"?"개인 기록":x.kind),make("h3","",x.title),make("p","record-meta",(x.date||new Date(x.created).toLocaleDateString("ko-KR"))+" · "+level(x.minLevel||1)));
   if(!watch&&x.kind==="장소"&&x.placeAddress)card.append(make("p","record-address","📍 "+x.placeAddress));
   if(x.body)card.append(make("p","record-note",x.body));
@@ -187,6 +191,7 @@ function openForm(kind,x,chosenCategory){
   $("entryPlaceAddress").value=x?.placeAddress||"";
   $("entryPlaceAddressField").hidden=kindLabel!=="장소";
   $("entryBody").value=x?.body||"";
+  window.SIA_RECORD_PHOTOS?.initForm(x?.imagePath||"");
  }
  form.scrollIntoView({behavior:"smooth",block:"center"});
 }
@@ -217,6 +222,7 @@ $("recordsFilter").onchange=()=>{
  cards();
 };
 $("recordsSearch").oninput=()=>cards();
+document.addEventListener("sia:record-photo-ready",()=>cards());
 document.querySelector('#mainNav a[href="#records"]')?.addEventListener("click",()=>{
  $("recordsFilter").value="all";cards();
 });
@@ -235,16 +241,26 @@ $("watchForm").onsubmit=e=>{
  toast("감상 기록을 서버에 저장하는 중입니다.");
  if(location.hash!=="#records")location.hash="#records";
 };
-$("entryForm").onsubmit=e=>{
- e.preventDefault();const old=state.entries.find(x=>x.id===editingEntry),url=$("entryUrl").value.trim();
+$("entryForm").onsubmit=async e=>{
+ e.preventDefault();
+ const submit=e.currentTarget.querySelector('button[type="submit"]');
+ if(submit?.disabled)return;
+ const old=state.entries.find(x=>x.id===editingEntry),url=$("entryUrl").value.trim();
  if(url&&!validUrl(url))return toast("https:// 링크만 등록할 수 있습니다.");
- const entry={id:old?.id||id(),created:old?.created||Date.now(),title:$("entryTitle").value.trim(),kind:$("entryKind").value,url,minLevel:Number($("entryLevel").value),body:$("entryBody").value.trim(),placeAddress:$("entryKind").value==="장소"?$("entryPlaceAddress").value.trim():""};
- if(!entry.title)return;
- state.entries=state.entries.filter(x=>x.id!==editingEntry);state.entries.push(entry);
- save();$("entryForm").hidden=true;editingEntry=null;
- $("recordsFilter").value=entry.kind;cards();
- toast("기록을 서버에 저장하는 중입니다.");
- if(location.hash!=="#records")location.hash="#records";
+ const entry={id:old?.id||id(),created:old?.created||Date.now(),title:$("entryTitle").value.trim(),kind:$("entryKind").value,url,minLevel:Number($("entryLevel").value),body:$("entryBody").value.trim(),placeAddress:$("entryKind").value==="장소"?$("entryPlaceAddress").value.trim():"",imagePath:old?.imagePath||""};
+ if(!entry.title)return toast("기록 제목을 입력해 주세요.");
+ if(!window.SIA_IDENTITY?.admin)return toast("기록 추가는 관리자 계정으로 로그인해야 합니다.");
+ submit.disabled=true;
+ try{
+  entry.imagePath=await window.SIA_RECORD_PHOTOS?.prepareUpload(entry.id,old?.imagePath||"")??entry.imagePath;
+  state.entries=state.entries.filter(x=>x.id!==editingEntry);state.entries.push(entry);
+  save();$("entryForm").hidden=true;editingEntry=null;
+  $("recordsFilter").value=entry.kind;cards();
+  toast("기록과 첨부 사진을 서버에 저장하는 중입니다.");
+  if(location.hash!=="#records")location.hash="#records";
+ }catch(error){
+  toast("사진 첨부를 저장하지 못했습니다: "+String(error.message||error));
+ }finally{submit.disabled=false;}
 };
 function socialUrl(v,allowed){try{const u=new URL(v);return u.protocol==="https:"&&allowed.some(host=>u.hostname===host||u.hostname.endsWith("."+host))?u.href:null;}catch{return null;}}
 function renderSocial(){
