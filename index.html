@@ -63,6 +63,7 @@
 
   <section class="section route-page" id="practice" data-section="practice">
     <div class="section-heading"><div><div class="section-label">02 / 시간기록</div><h2>시간기록</h2></div><p>피아노 연습·순공 시간을 초 단위로 표시합니다. 타이머 조작과 기록 저장은 관리자 전용입니다.</p></div>
+    <div class="cloud-refresh-row"><span id="practiceSyncStatus" class="cloud-refresh-status" aria-live="polite">서버 자료 확인 중…</span><button type="button" class="btn small" id="refreshPracticeFromServer">서버에서 시간기록 새로고침</button></div>
     <div class="dashboard-grid">
       <div class="panel timer-view owner-only">
         <div class="row" style="justify-content:center"><label class="field" style="min-width:200px;text-align:left">타이머 종류<select id="timerKind"><option value="피아노 연습">피아노 연습</option><option value="순공">순공</option></select></label></div>
@@ -86,6 +87,7 @@
 
   <section class="section archive-page route-page records-page" id="records" data-section="records">
     <div class="section-heading"><div><div class="section-label">03 / 기록들</div><h2>기록들</h2></div><p>영화·드라마, 사진, 책, 장소 등 모든 기록을 한곳에서 관리합니다.</p></div>
+    <div class="cloud-refresh-row"><span id="recordsSyncStatus" class="cloud-refresh-status" aria-live="polite">서버 자료 확인 중…</span><button type="button" class="btn small" id="refreshRecordsFromServer">서버에서 기록 새로고침</button></div>
     <div class="records-toolbar">
       <label class="field" for="recordsFilter">분류별 보기
         <select id="recordsFilter" class="select">
@@ -274,6 +276,7 @@
         </div>
         <button id="cloudViewerRefresh" type="button" class="btn" hidden>서버 내용 새로고침</button>
         <button id="restoreLocalDraft" type="button" class="btn" hidden>이전 로컬 기록 복구</button>
+        <button id="restoreDeviceRecords" type="button" class="btn" hidden>이 기기의 누락 기록 서버에 합치기</button><p id="deviceRecordsBackupStatus" class="section-note" role="status"></p>
         <button id="cloudLogout" type="button" class="btn" hidden>로그아웃</button>
         <p class="section-note">SIA SPACE용 계정을 새로 만들 수 있습니다. 가입 후에는 이메일 인증과 관리자 승인이 필요합니다.</p>
       </div>
@@ -329,9 +332,9 @@
 <link rel="stylesheet" href="enhancements.css?v=records-final-20261125">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <script src="site-config.js?v=contact-20261117" defer></script>
-<script src="app.js?v=records-final-20261125" defer></script>
+<script src="app.js?v=syncfix-20261125" defer></script>
 <script src="enhancements.js?v=autosave-20261117" defer></script>
-<script src="backend.js?v=naver-20261118" defer></script>
+<script src="backend.js?v=syncfix-20261125" defer></script>
 <script src="signup.js" defer></script>
 <script src="stats.js" defer></script>
 <script src="access.js?v=records-final-20261125" defer></script>
