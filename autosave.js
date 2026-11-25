@@ -178,8 +178,10 @@ async function flush(){
   }
  }
  busy=false;
- if(!failed&&queue.length===0)ui("모든 변경사항이 서버에 자동 저장됐습니다.","success");
- else if(!failed&&queue.length)ui("로그인 후 남은 저장을 재개할 수 있습니다.");
+ if(!failed&&queue.length===0){
+  ui("모든 변경사항이 서버에 자동 저장됐습니다.","success");
+  document.dispatchEvent(new Event("sia:autosave-drained"));
+ } else if(!failed&&queue.length)ui("로그인 후 남은 저장을 재개할 수 있습니다.");
  const button=$("autoSyncRetry");if(button)button.hidden=queue.length===0;
 }
 function addOperations(ops){
